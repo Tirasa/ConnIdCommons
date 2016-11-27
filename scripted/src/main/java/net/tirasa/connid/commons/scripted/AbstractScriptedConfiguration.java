@@ -29,7 +29,7 @@ import org.identityconnectors.framework.spi.ConfigurationProperty;
 
 public abstract class AbstractScriptedConfiguration extends AbstractConfiguration {
 
-    private static final Log LOG = Log.getLog(AbstractScriptedConfiguration.class);
+    protected static final Log LOG = Log.getLog(AbstractScriptedConfiguration.class);
 
     /**
      * Scripting language.
@@ -259,8 +259,6 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
      */
     @Override
     public void validate() {
-        LOG.info("Validate " + getClass().getName());
-
         // Validate the actions
         LOG.info("Checking Create Script filename");
         checkFileIsReadable("Create", getCreateScriptFileName());
@@ -274,8 +272,6 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
         checkFileIsReadable("Sync", getSyncScriptFileName());
         LOG.info("Checking Test Script filename");
         checkFileIsReadable("Test", getTestScriptFileName());
-
-        LOG.ok("Configuration is valid");
     }
 
     /**
