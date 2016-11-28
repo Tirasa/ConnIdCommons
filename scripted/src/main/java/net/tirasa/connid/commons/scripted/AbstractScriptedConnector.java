@@ -412,7 +412,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("username", username);
 
-            final String[] clearPwd = new String[0];
+            final String[] clearPwd = new String[1];
             password.access(new GuardedString.Accessor() {
 
                 @Override
