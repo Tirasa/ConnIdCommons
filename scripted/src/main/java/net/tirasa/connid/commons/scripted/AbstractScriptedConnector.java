@@ -2,7 +2,7 @@
  * ====================
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Tirasa. All rights reserved.
+ * Copyright 2016 ConnId. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (the "License").  You may not use this file
@@ -22,10 +22,10 @@
  */
 package net.tirasa.connid.commons.scripted;
 
-import static net.tirasa.connid.commons.scripted.Constants.BLANK_RESULT_HANDLER;
-import static net.tirasa.connid.commons.scripted.Constants.BLANK_UID;
-import static net.tirasa.connid.commons.scripted.Constants.INVALID_ATTRIBUTE_SET;
-import static net.tirasa.connid.commons.scripted.Constants.OBJECT_CLASS_REQUIRED;
+import static net.tirasa.connid.commons.scripted.Constants.MSG_OBJECT_CLASS_REQUIRED;
+import static net.tirasa.connid.commons.scripted.Constants.MSG_INVALID_ATTRIBUTE_SET;
+import static net.tirasa.connid.commons.scripted.Constants.MSG_BLANK_UID;
+import static net.tirasa.connid.commons.scripted.Constants.MSG_BLANK_RESULT_HANDLER;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,6 +122,10 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
 
     private ScriptExecutor searchExecutor;
 
+    private ScriptExecutor authenticateExecutor;
+
+    private ScriptExecutor resolveUsernameExecutor;
+
     private ScriptExecutor syncExecutor;
 
     private ScriptExecutor schemaExecutor;
@@ -176,6 +180,14 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         searchExecutor = getScriptExecutor(config.getSearchScript(), config.getSearchScriptFileName());
         LOG.ok("Search script loaded");
 
+        authenticateExecutor = getScriptExecutor(
+                config.getAuthenticateScript(), config.getAuthenticateScriptFileName());
+        LOG.ok("Search script loaded");
+
+        resolveUsernameExecutor = getScriptExecutor(
+                config.getResolveUsernameScript(), config.getResolveUsernameScriptFileName());
+        LOG.ok("Search script loaded");
+
         syncExecutor = getScriptExecutor(config.getSyncScript(), config.getSyncScriptFileName());
         LOG.ok("Sync script loaded");
 
@@ -202,12 +214,12 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
         if (createExecutor != null) {
             if (objectClass == null) {
-                throw new IllegalArgumentException(config.getMessage(OBJECT_CLASS_REQUIRED));
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
             LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
 
             if (createAttributes == null || createAttributes.isEmpty()) {
-                throw new IllegalArgumentException(config.getMessage(INVALID_ATTRIBUTE_SET));
+                throw new IllegalArgumentException(config.getMessage(MSG_INVALID_ATTRIBUTE_SET));
             }
 
             final Map<String, Object> arguments = buildArguments();
@@ -257,16 +269,16 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
         if (updateExecutor != null) {
             if (objClass == null) {
-                throw new IllegalArgumentException(config.getMessage(OBJECT_CLASS_REQUIRED));
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
             LOG.ok("Object class: {0}", objClass.getObjectClassValue());
 
             if (attrs == null || attrs.isEmpty()) {
-                throw new IllegalArgumentException(config.getMessage(INVALID_ATTRIBUTE_SET));
+                throw new IllegalArgumentException(config.getMessage(MSG_INVALID_ATTRIBUTE_SET));
             }
 
             if (uid == null || (uid.getUidValue() == null)) {
-                throw new IllegalArgumentException(config.getMessage(BLANK_UID));
+                throw new IllegalArgumentException(config.getMessage(MSG_BLANK_UID));
             }
             final String id = uid.getUidValue();
 
@@ -347,12 +359,12 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
         if (deleteExecutor != null) {
             if (objectClass == null) {
-                throw new IllegalArgumentException(config.getMessage(OBJECT_CLASS_REQUIRED));
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
             LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
 
             if (uid == null || (uid.getUidValue() == null)) {
-                throw new IllegalArgumentException(config.getMessage(BLANK_UID));
+                throw new IllegalArgumentException(config.getMessage(MSG_BLANK_UID));
             }
             final String id = uid.getUidValue();
 
@@ -382,7 +394,48 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             final GuardedString password,
             final OperationOptions options) {
 
-        throw new UnsupportedOperationException();
+        if (config.isReloadScriptOnExecution()) {
+            authenticateExecutor = getScriptExecutor(
+                    config.getAuthenticateScript(), config.getAuthenticateScriptFileName());
+            LOG.ok("Authenticate script loaded");
+        }
+        if (authenticateExecutor != null) {
+            if (objectClass == null) {
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
+            }
+            LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
+
+            final Map<String, Object> arguments = buildArguments();
+
+            arguments.put("action", "AUTHENTICATE");
+            arguments.put("log", LOG);
+            arguments.put("objectClass", objectClass.getObjectClassValue());
+            arguments.put("username", username);
+
+            final String[] clearPwd = new String[0];
+            password.access(new GuardedString.Accessor() {
+
+                @Override
+                public void access(char[] clearChars) {
+                    clearPwd[0] = new String(clearChars);
+                }
+            });
+            arguments.put("password", clearPwd[0]);
+            arguments.put("options", options.getOptions());
+
+            try {
+                Object uid = authenticateExecutor.execute(arguments);
+                if (uid instanceof String) {
+                    LOG.ok("{0} authenticated", uid);
+                    return new Uid((String) uid);
+                }
+            } catch (Exception e) {
+                throw new ConnectorException("Authenticate script error", e);
+            }
+            throw new ConnectorException("Authenticate script didn't return with the __UID__ value");
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
@@ -391,7 +444,38 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             final String username,
             final OperationOptions options) {
 
-        throw new UnsupportedOperationException();
+        if (config.isReloadScriptOnExecution()) {
+            resolveUsernameExecutor = getScriptExecutor(
+                    config.getResolveUsernameScript(), config.getResolveUsernameScriptFileName());
+            LOG.ok("ResolveUsername script loaded");
+        }
+        if (resolveUsernameExecutor != null) {
+            if (objectClass == null) {
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
+            }
+            LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
+
+            final Map<String, Object> arguments = buildArguments();
+
+            arguments.put("action", "RESOLVE USERNAME");
+            arguments.put("log", LOG);
+            arguments.put("objectClass", objectClass.getObjectClassValue());
+            arguments.put("username", username);
+            arguments.put("options", options.getOptions());
+
+            try {
+                Object uid = resolveUsernameExecutor.execute(arguments);
+                if (uid instanceof String) {
+                    LOG.ok("{0} resolved", uid);
+                    return new Uid((String) uid);
+                }
+            } catch (Exception e) {
+                throw new ConnectorException("ResolveUsername script error", e);
+            }
+            throw new ConnectorException("ResolveUsername script didn't return with the __UID__ value");
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
@@ -431,11 +515,11 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
         if (searchExecutor != null) {
             if (objectClass == null) {
-                throw new IllegalArgumentException(config.getMessage(OBJECT_CLASS_REQUIRED));
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
             LOG.ok("ObjectClass: {0}", objectClass.getObjectClassValue());
             if (handler == null) {
-                throw new IllegalArgumentException(config.getMessage(BLANK_RESULT_HANDLER));
+                throw new IllegalArgumentException(config.getMessage(MSG_BLANK_RESULT_HANDLER));
             }
 
             final Map<String, Object> arguments = buildArguments();
@@ -471,11 +555,11 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
         if (syncExecutor != null) {
             if (objectClass == null) {
-                throw new IllegalArgumentException(config.getMessage(OBJECT_CLASS_REQUIRED));
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
             LOG.ok("ObjectClass: {0}", objectClass.getObjectClassValue());
             if (handler == null) {
-                throw new IllegalArgumentException(config.getMessage(BLANK_RESULT_HANDLER));
+                throw new IllegalArgumentException(config.getMessage(MSG_BLANK_RESULT_HANDLER));
             }
 
             final Map<String, Object> arguments = buildArguments();
@@ -507,7 +591,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         if (syncExecutor != null) {
             SyncToken st = null;
             if (objectClass == null) {
-                throw new IllegalArgumentException(config.getMessage(OBJECT_CLASS_REQUIRED));
+                throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
             LOG.ok("ObjectClass: {0}", objectClass.getObjectClassValue());
 

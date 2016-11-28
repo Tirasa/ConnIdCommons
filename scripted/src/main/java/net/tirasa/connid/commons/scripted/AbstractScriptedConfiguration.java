@@ -2,7 +2,7 @@
  * ====================
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Tirasa. All rights reserved.
+ * Copyright 2016 ConnId. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (the "License").  You may not use this file
@@ -119,6 +119,36 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     }
 
     /**
+     * Authenticate script string.
+     */
+    private String authenticateScript = "";
+
+    @ConfigurationProperty(displayMessageKey = "authenticateScript.display",
+            helpMessageKey = "authenticateScript.help", order = 6)
+    public String getAuthenticateScript() {
+        return authenticateScript;
+    }
+
+    public void setAuthenticateScript(String value) {
+        this.authenticateScript = value;
+    }
+
+    /**
+     * Resolve username script string.
+     */
+    private String resolveUsernameScript = "";
+
+    @ConfigurationProperty(displayMessageKey = "resolveUsernameScript.display", helpMessageKey =
+            "resolveUsernameScript.help", order = 6)
+    public String getResolveUsernameScript() {
+        return resolveUsernameScript;
+    }
+
+    public void setResolveUsernameScript(String value) {
+        this.resolveUsernameScript = value;
+    }
+
+    /**
      * Sync script string.
      */
     private String syncScript = "";
@@ -207,12 +237,42 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     }
 
     /**
+     * Authenticate script FileName.
+     */
+    private String authenticateScriptFileName = null;
+
+    @ConfigurationProperty(displayMessageKey = "authenticateScriptFileName.display",
+            helpMessageKey = "authenticateScriptFileName.help", order = 13)
+    public String getAuthenticateScriptFileName() {
+        return authenticateScriptFileName;
+    }
+
+    public void setAuthenticateScriptFileName(String value) {
+        this.authenticateScriptFileName = value;
+    }
+
+    /**
+     * Resolve username script FileName.
+     */
+    private String resolveUsernameScriptFileName = null;
+
+    @ConfigurationProperty(displayMessageKey = "resolveUsernameScriptFileName.display",
+            helpMessageKey = "resolveUsernameScriptFileName.help", order = 14)
+    public String getResolveUsernameScriptFileName() {
+        return resolveUsernameScriptFileName;
+    }
+
+    public void setResolveUsernameScriptFileName(String value) {
+        this.resolveUsernameScriptFileName = value;
+    }
+
+    /**
      * Sync script FileName.
      */
     private String syncScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "syncScriptFileName.display",
-            helpMessageKey = "syncScriptFileName.help", order = 13)
+            helpMessageKey = "syncScriptFileName.help", order = 15)
     public String getSyncScriptFileName() {
         return syncScriptFileName;
     }
@@ -227,7 +287,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String schemaScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "schemaScriptFileName.display",
-            helpMessageKey = "schemaScriptFileName.help", order = 14)
+            helpMessageKey = "schemaScriptFileName.help", order = 16)
     public String getSchemaScriptFileName() {
         return schemaScriptFileName;
     }
@@ -242,7 +302,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String testScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "testScriptFileName.display",
-            helpMessageKey = "testScriptFileName.help", order = 15)
+            helpMessageKey = "testScriptFileName.help", order = 17)
     public String getTestScriptFileName() {
         return testScriptFileName;
     }

@@ -2,7 +2,7 @@
  * ====================
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Tirasa. All rights reserved.
+ * Copyright 2016 ConnId. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (the "License").  You may not use this file
@@ -24,13 +24,13 @@ package net.tirasa.connid.commons.scripted;
 
 public final class Constants {
 
-    public static final String OBJECT_CLASS_REQUIRED = "objectClass.required";
+    public static final String MSG_OBJECT_CLASS_REQUIRED = "objectClass.required";
 
-    public static final String INVALID_ATTRIBUTE_SET = "invalid.attribute.set";
+    public static final String MSG_INVALID_ATTRIBUTE_SET = "invalid.attribute.set";
 
-    public static final String BLANK_UID = "blank.uid";
+    public static final String MSG_BLANK_UID = "blank.uid";
 
-    public static final String BLANK_RESULT_HANDLER = "blank.result.hanlder";
+    public static final String MSG_BLANK_RESULT_HANDLER = "blank.result.hanlder";
 
     private Constants() {
         // private constructor for static utility class
