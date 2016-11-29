@@ -45,6 +45,21 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     }
 
     /**
+     * Should password be passed to scripts in clear text?
+     */
+    private boolean clearTextPasswordToScript = true;
+
+    @ConfigurationProperty(displayMessageKey = "clearTextPasswordToScript.display",
+            helpMessageKey = "clearTextPasswordToScript.help", order = 1)
+    public boolean getClearTextPasswordToScript() {
+        return clearTextPasswordToScript;
+    }
+
+    public void setClearTextPasswordToScript(boolean value) {
+        this.clearTextPasswordToScript = value;
+    }
+
+    /**
      * By default, scripts are loaded and compiled when a connector instance ss created and initialized.
      * Setting reloadScriptOnExecution to true will make the connector load and compile the script every time it is
      * called.

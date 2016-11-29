@@ -42,6 +42,7 @@ import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.script.ScriptExecutor;
 import org.identityconnectors.common.script.ScriptExecutorFactory;
 import org.identityconnectors.common.security.GuardedString;
+import org.identityconnectors.common.security.GuardedString.Accessor;
 import org.identityconnectors.framework.api.operations.ResolveUsernameApiOp;
 import org.identityconnectors.framework.common.FrameworkUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -56,6 +57,7 @@ import org.identityconnectors.framework.common.objects.OperationalAttributes;
 import org.identityconnectors.framework.common.objects.ResultsHandler;
 import org.identityconnectors.framework.common.objects.Schema;
 import org.identityconnectors.framework.common.objects.SchemaBuilder;
+import org.identityconnectors.framework.common.objects.ScriptContext;
 import org.identityconnectors.framework.common.objects.SearchResult;
 import org.identityconnectors.framework.common.objects.SyncDeltaBuilder;
 import org.identityconnectors.framework.common.objects.SyncDeltaType;
@@ -69,6 +71,7 @@ import org.identityconnectors.framework.spi.operations.AuthenticateOp;
 import org.identityconnectors.framework.spi.operations.CreateOp;
 import org.identityconnectors.framework.spi.operations.DeleteOp;
 import org.identityconnectors.framework.spi.operations.SchemaOp;
+import org.identityconnectors.framework.spi.operations.ScriptOnConnectorOp;
 import org.identityconnectors.framework.spi.operations.SearchOp;
 import org.identityconnectors.framework.spi.operations.SyncOp;
 import org.identityconnectors.framework.spi.operations.TestOp;
@@ -76,8 +79,8 @@ import org.identityconnectors.framework.spi.operations.UpdateAttributeValuesOp;
 import org.identityconnectors.framework.spi.operations.UpdateOp;
 
 public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfiguration> implements Connector,
-        CreateOp, UpdateOp, UpdateAttributeValuesOp, DeleteOp,
-        AuthenticateOp, ResolveUsernameApiOp, SchemaOp, SyncOp, TestOp, SearchOp<Map<String, Object>> {
+        CreateOp, UpdateOp, UpdateAttributeValuesOp, DeleteOp, AuthenticateOp, ResolveUsernameApiOp, SchemaOp, SyncOp,
+        TestOp, SearchOp<Map<String, Object>>, ScriptOnConnectorOp {
 
     protected static final Log LOG = Log.getLog(AbstractScriptedConnector.class);
 
@@ -131,6 +134,8 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
     private ScriptExecutor schemaExecutor;
 
     private ScriptExecutor testExecutor;
+
+    private ScriptExecutor runOnConnectorExecutor;
 
     @Override
     public C getConfiguration() {
@@ -241,6 +246,22 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             attrMap.remove(Name.NAME);
             arguments.put("attributes", attrMap);
 
+            // Password - if allowed we provide it in clear
+            if (config.getClearTextPasswordToScript()) {
+                GuardedString gpasswd = AttributeUtil.getPasswordValue(createAttributes);
+                if (gpasswd != null) {
+                    gpasswd.access(new Accessor() {
+
+                        @Override
+                        public void access(char[] clearChars) {
+                            arguments.put("password", new String(clearChars));
+                        }
+                    });
+                } else {
+                    arguments.put("password", null);
+                }
+            }
+
             try {
                 Object uidAfter = createExecutor.execute(arguments);
                 if (uidAfter instanceof String) {
@@ -302,6 +323,21 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             arguments.put("attributes", attrMap);
 
+            // Do we need to update the password?
+            if (config.getClearTextPasswordToScript() && method.equalsIgnoreCase("UPDATE")) {
+                GuardedString gpasswd = AttributeUtil.getPasswordValue(attrs);
+                if (gpasswd != null) {
+                    gpasswd.access(new Accessor() {
+
+                        @Override
+                        public void access(char[] clearChars) {
+                            arguments.put("password", new String(clearChars));
+                        }
+                    });
+                } else {
+                    arguments.put("password", null);
+                }
+            }
             try {
                 Object uidAfter = updateExecutor.execute(arguments);
                 if (uidAfter instanceof String) {
@@ -340,8 +376,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
     @Override
     public Uid removeAttributeValues(
             final ObjectClass objectClass,
-            final Uid uid,
-            final Set<Attribute> valuesToRemove,
+            final Uid uid, Set<Attribute> valuesToRemove,
             final OperationOptions options) {
 
         return genericUpdate("REMOVE_ATTRIBUTE_VALUES", objectClass, uid, valuesToRemove, options);
@@ -613,6 +648,38 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new ConnectorException("Sync (GetLatestSyncToken) script error", e);
             }
             return st;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Override
+    public Object runScriptOnConnector(final ScriptContext request, final OperationOptions options) {
+        Object result = null;
+        try {
+            if (request.getScriptText() != null && request.getScriptText().length() > 0) {
+                assert request.getScriptLanguage().equalsIgnoreCase(config.getScriptingLanguage());
+                runOnConnectorExecutor = factory.newScriptExecutor(
+                        getClass().getClassLoader(), request.getScriptText(), true);
+            }
+        } catch (Exception e) {
+            throw new ConnectorException("RunOnConnector script parse error", e);
+        }
+        if (runOnConnectorExecutor != null) {
+            final Map<String, Object> arguments = buildArguments();
+
+            arguments.put("action", "RUNSCRIPTONCONNECTOR");
+            arguments.put("log", LOG);
+            arguments.put("options", options.getOptions());
+            arguments.put("scriptsArguments", request.getScriptArguments());
+            try {
+                // We return any object from the script
+                result = runOnConnectorExecutor.execute(arguments);
+                LOG.ok("runOnConnector script ok");
+            } catch (Exception e) {
+                throw new ConnectorException("runOnConnector script error", e);
+            }
+            return result;
         } else {
             throw new UnsupportedOperationException();
         }
