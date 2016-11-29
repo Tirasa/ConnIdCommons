@@ -178,11 +178,25 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     }
 
     /**
+     * Schema script string.
+     */
+    private String schemaScript = "";
+
+    @ConfigurationProperty(displayMessageKey = "schemaScript.display", helpMessageKey = "schemaScript.help", order = 8)
+    public String getSchemaScript() {
+        return schemaScript;
+    }
+
+    public void setSchemaScript(String value) {
+        this.schemaScript = value;
+    }
+
+    /**
      * Test script string.
      */
     private String testScript = "";
 
-    @ConfigurationProperty(displayMessageKey = "testScript.display", helpMessageKey = "testScript.help", order = 8)
+    @ConfigurationProperty(displayMessageKey = "testScript.display", helpMessageKey = "testScript.help", order = 9)
     public String getTestScript() {
         return testScript;
     }
@@ -197,7 +211,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String createScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "createScriptFileName.display",
-            helpMessageKey = "createScriptFileName.help", order = 9)
+            helpMessageKey = "createScriptFileName.help", order = 10)
     public String getCreateScriptFileName() {
         return createScriptFileName;
     }
@@ -212,7 +226,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String updateScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "updateScriptFileName.display",
-            helpMessageKey = "updateScriptFileName.help", order = 10)
+            helpMessageKey = "updateScriptFileName.help", order = 11)
     public String getUpdateScriptFileName() {
         return updateScriptFileName;
     }
@@ -227,7 +241,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String deleteScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "deleteScriptFileName.display",
-            helpMessageKey = "deleteScriptFileName.help", order = 11)
+            helpMessageKey = "deleteScriptFileName.help", order = 12)
     public String getDeleteScriptFileName() {
         return deleteScriptFileName;
     }
@@ -242,7 +256,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String searchScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "searchScriptFileName.display",
-            helpMessageKey = "searchScriptFileName.help", order = 12)
+            helpMessageKey = "searchScriptFileName.help", order = 13)
     public String getSearchScriptFileName() {
         return searchScriptFileName;
     }
@@ -257,7 +271,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String authenticateScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "authenticateScriptFileName.display",
-            helpMessageKey = "authenticateScriptFileName.help", order = 13)
+            helpMessageKey = "authenticateScriptFileName.help", order = 14)
     public String getAuthenticateScriptFileName() {
         return authenticateScriptFileName;
     }
@@ -272,7 +286,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String resolveUsernameScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "resolveUsernameScriptFileName.display",
-            helpMessageKey = "resolveUsernameScriptFileName.help", order = 14)
+            helpMessageKey = "resolveUsernameScriptFileName.help", order = 15)
     public String getResolveUsernameScriptFileName() {
         return resolveUsernameScriptFileName;
     }
@@ -287,7 +301,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String syncScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "syncScriptFileName.display",
-            helpMessageKey = "syncScriptFileName.help", order = 15)
+            helpMessageKey = "syncScriptFileName.help", order = 16)
     public String getSyncScriptFileName() {
         return syncScriptFileName;
     }
@@ -302,7 +316,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String schemaScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "schemaScriptFileName.display",
-            helpMessageKey = "schemaScriptFileName.help", order = 16)
+            helpMessageKey = "schemaScriptFileName.help", order = 17)
     public String getSchemaScriptFileName() {
         return schemaScriptFileName;
     }
@@ -317,7 +331,7 @@ public abstract class AbstractScriptedConfiguration extends AbstractConfiguratio
     private String testScriptFileName = null;
 
     @ConfigurationProperty(displayMessageKey = "testScriptFileName.display",
-            helpMessageKey = "testScriptFileName.help", order = 17)
+            helpMessageKey = "testScriptFileName.help", order = 18)
     public String getTestScriptFileName() {
         return testScriptFileName;
     }

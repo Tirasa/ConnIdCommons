@@ -196,7 +196,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         syncExecutor = getScriptExecutor(config.getSyncScript(), config.getSyncScriptFileName());
         LOG.ok("Sync script loaded");
 
-        schemaExecutor = getScriptExecutor("", config.getSchemaScriptFileName());
+        schemaExecutor = getScriptExecutor(config.getSchemaScript(), config.getSchemaScriptFileName());
         LOG.ok("Sync script loaded");
 
         testExecutor = getScriptExecutor(config.getTestScript(), config.getTestScriptFileName());
