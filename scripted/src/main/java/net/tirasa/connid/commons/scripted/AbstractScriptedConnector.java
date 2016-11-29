@@ -426,7 +426,8 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             arguments.put("log", LOG);
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("username", username);
-            arguments.put("password", SecurityUtil.decrypt(password));
+            arguments.put("password",
+                    config.getClearTextPasswordToScript() ? SecurityUtil.decrypt(password) : password);
             arguments.put("options", options.getOptions());
 
             try {
