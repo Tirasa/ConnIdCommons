@@ -42,7 +42,7 @@ import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.script.ScriptExecutor;
 import org.identityconnectors.common.script.ScriptExecutorFactory;
 import org.identityconnectors.common.security.GuardedString;
-import org.identityconnectors.common.security.GuardedString.Accessor;
+import org.identityconnectors.common.security.SecurityUtil;
 import org.identityconnectors.framework.api.operations.ResolveUsernameApiOp;
 import org.identityconnectors.framework.common.FrameworkUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -249,17 +249,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             // Password - if allowed we provide it in clear
             if (config.getClearTextPasswordToScript()) {
                 GuardedString gpasswd = AttributeUtil.getPasswordValue(createAttributes);
-                if (gpasswd != null) {
-                    gpasswd.access(new Accessor() {
-
-                        @Override
-                        public void access(char[] clearChars) {
-                            arguments.put("password", new String(clearChars));
-                        }
-                    });
-                } else {
-                    arguments.put("password", null);
-                }
+                arguments.put("password", gpasswd == null ? null : SecurityUtil.decrypt(gpasswd));
             }
 
             try {
@@ -326,17 +316,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             // Do we need to update the password?
             if (config.getClearTextPasswordToScript() && method.equalsIgnoreCase("UPDATE")) {
                 GuardedString gpasswd = AttributeUtil.getPasswordValue(attrs);
-                if (gpasswd != null) {
-                    gpasswd.access(new Accessor() {
-
-                        @Override
-                        public void access(char[] clearChars) {
-                            arguments.put("password", new String(clearChars));
-                        }
-                    });
-                } else {
-                    arguments.put("password", null);
-                }
+                arguments.put("password", gpasswd == null ? null : SecurityUtil.decrypt(gpasswd));
             }
             try {
                 Object uidAfter = updateExecutor.execute(arguments);
@@ -446,16 +426,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             arguments.put("log", LOG);
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("username", username);
-
-            final String[] clearPwd = new String[1];
-            password.access(new GuardedString.Accessor() {
-
-                @Override
-                public void access(char[] clearChars) {
-                    clearPwd[0] = new String(clearChars);
-                }
-            });
-            arguments.put("password", clearPwd[0]);
+            arguments.put("password", SecurityUtil.decrypt(password));
             arguments.put("options", options.getOptions());
 
             try {
