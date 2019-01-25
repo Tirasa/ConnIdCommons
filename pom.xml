@@ -35,7 +35,7 @@
     
   <groupId>net.tirasa.connid</groupId>
   <artifactId>connid-commons</artifactId>
-  <version>1.4.1.1-SNAPSHOT</version>
+  <version>1.4.1.1</version>
 
   <name>ConnId Commons</name>
 
@@ -56,7 +56,7 @@
     <connection>scm:git:git@github.com:Tirasa/ConnIdCommons.git</connection>
     <url>scm:git:git@github.com:Tirasa/ConnIdCommons.git</url>
     <developerConnection>scm:git:git@github.com:Tirasa/ConnIdCommons.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>connid-commons-1.4.1.1</tag>
   </scm>
 
   <issueManagement>
