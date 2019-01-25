@@ -109,7 +109,7 @@ public class DatabaseQueryBuilderTest {
     public void testGetSql() {
         FilterWhereBuilder where = new FilterWhereBuilder();
         final SQLParam param = new SQLParam(NAME, VALUE);
-        where.addBind(param, OPERATOR);
+        where.addBind(param, OPERATOR, false);
         DatabaseQueryBuilder actual = new DatabaseQueryBuilder(SELECT);
         actual.setWhere(where);
         assertNotNull(actual);
@@ -125,7 +125,7 @@ public class DatabaseQueryBuilderTest {
     public void testGetSqlWithWhere() {
         FilterWhereBuilder where = new FilterWhereBuilder();
         final SQLParam param = new SQLParam(NAME, VALUE);
-        where.addBind(param, OPERATOR);
+        where.addBind(param, OPERATOR, false);
         DatabaseQueryBuilder actual = new DatabaseQueryBuilder(SELECT_WITH_WHERE);
         actual.setWhere(where);
         assertNotNull(actual);
@@ -155,7 +155,7 @@ public class DatabaseQueryBuilderTest {
         attributesToGet.add("test2");
         FilterWhereBuilder where = new FilterWhereBuilder();
         final SQLParam param = new SQLParam(NAME, VALUE);
-        where.addBind(param, OPERATOR);
+        where.addBind(param, OPERATOR, false);
         DatabaseQueryBuilder actual = new DatabaseQueryBuilder("table", attributesToGet);
         actual.setWhere(where);
         assertEquals("SELECT test1 , test2 FROM table WHERE name = ?", actual.getSQL());
@@ -173,7 +173,7 @@ public class DatabaseQueryBuilderTest {
         attributesToGet.add("test2");
         FilterWhereBuilder where = new FilterWhereBuilder();
         final SQLParam param = new SQLParam(NAME, VALUE);
-        where.addBind(param, OPERATOR);
+        where.addBind(param, OPERATOR, false);
         DatabaseQueryBuilder actual = new DatabaseQueryBuilder("table", attributesToGet);
         actual.setWhere(where);
         actual.setTableName("table");
@@ -196,7 +196,7 @@ public class DatabaseQueryBuilderTest {
         orderBy.add(new OrderBy("test2", false));
         FilterWhereBuilder where = new FilterWhereBuilder();
         final SQLParam param = new SQLParam(NAME, VALUE);
-        where.addBind(param, OPERATOR);
+        where.addBind(param, OPERATOR, false);
         DatabaseQueryBuilder actual = new DatabaseQueryBuilder("table", attributesToGet);
         actual.setWhere(where);
         actual.setOrderBy(orderBy);

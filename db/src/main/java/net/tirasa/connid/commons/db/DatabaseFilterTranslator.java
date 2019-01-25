@@ -31,6 +31,7 @@ import org.identityconnectors.framework.common.objects.filter.AbstractFilterTran
 import org.identityconnectors.framework.common.objects.filter.ContainsFilter;
 import org.identityconnectors.framework.common.objects.filter.EndsWithFilter;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
+import org.identityconnectors.framework.common.objects.filter.EqualsIgnoreCaseFilter;
 import org.identityconnectors.framework.common.objects.filter.GreaterThanFilter;
 import org.identityconnectors.framework.common.objects.filter.GreaterThanOrEqualFilter;
 import org.identityconnectors.framework.common.objects.filter.LessThanFilter;
@@ -103,7 +104,30 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
             ret.addNull(param.getName());
             return ret;
         }
-        ret.addBind(param, "=");
+        ret.addBind(param, "=", false);
+        return ret;
+    }
+
+    @Override
+    protected FilterWhereBuilder createEqualsIgnoreCaseExpression(EqualsIgnoreCaseFilter filter, boolean not) {
+        final Attribute attribute = filter.getAttribute();
+        if (!validateSearchAttribute(attribute)) {
+            return null;
+        }
+        SQLParam param = getSQLParam(attribute, oclass, options);
+        if (param == null) {
+            return null;
+        }
+        final FilterWhereBuilder ret = createBuilder();
+        if (not) {
+            ret.getWhere().append("NOT ");
+        }
+        // Normalize NULLs
+        if (param.getValue() == null) {
+            ret.addNull(param.getName());
+            return ret;
+        }
+        ret.addBind(param, "=", true);
         return ret;
     }
 
@@ -130,7 +154,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         if (!value.endsWith("%")) {
             value = value + "%";
         }
-        ret.addBind(new SQLParam(param.getName(), value, param.getSqlType()), "LIKE");
+        ret.addBind(new SQLParam(param.getName(), value, param.getSqlType()), "LIKE", false);
         return ret;
     }
 
@@ -154,7 +178,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         if (!value.startsWith("%")) {
             value = "%" + value;
         }
-        ret.addBind(new SQLParam(param.getName(), value, param.getSqlType()), "LIKE");
+        ret.addBind(new SQLParam(param.getName(), value, param.getSqlType()), "LIKE", false);
         return ret;
     }
 
@@ -178,7 +202,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         if (!value.endsWith("%")) {
             value = value + "%";
         }
-        ret.addBind(new SQLParam(param.getName(), value, param.getSqlType()), "LIKE");
+        ret.addBind(new SQLParam(param.getName(), value, param.getSqlType()), "LIKE", false);
         return ret;
     }
 
@@ -194,7 +218,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         }
         final FilterWhereBuilder ret = createBuilder();
         final String op = not ? "<=" : ">";
-        ret.addBind(param, op);
+        ret.addBind(param, op, false);
         return ret;
     }
 
@@ -210,7 +234,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         }
         final FilterWhereBuilder ret = createBuilder();
         final String op = not ? "<" : ">=";
-        ret.addBind(param, op);
+        ret.addBind(param, op, false);
         return ret;
     }
 
@@ -226,7 +250,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         }
         final FilterWhereBuilder ret = createBuilder();
         final String op = not ? ">=" : "<";
-        ret.addBind(param, op);
+        ret.addBind(param, op, false);
         return ret;
     }
 
@@ -242,7 +266,7 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         }
         final FilterWhereBuilder ret = createBuilder();
         final String op = not ? ">" : "<=";
-        ret.addBind(param, op);
+        ret.addBind(param, op, false);
         return ret;
     }
 

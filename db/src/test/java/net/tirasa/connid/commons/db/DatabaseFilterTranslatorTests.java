@@ -22,29 +22,32 @@
  * Portions Copyrighted 2011 ConnId.
  */
 package net.tirasa.connid.commons.db;
+
 import static org.identityconnectors.framework.common.objects.AttributeBuilder.build;
 import static org.identityconnectors.framework.common.objects.filter.FilterBuilder.*;
 import static org.junit.Assert.assertEquals;
+
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import org.identityconnectors.framework.common.objects.Attribute;
+import org.identityconnectors.framework.common.objects.AttributeBuilder;
 import org.identityconnectors.framework.common.objects.AttributeUtil;
 import org.identityconnectors.framework.common.objects.ObjectClass;
 import org.identityconnectors.framework.common.objects.OperationOptions;
 import org.identityconnectors.framework.common.objects.filter.Filter;
 import org.identityconnectors.framework.common.objects.filter.FilterBuilder;
 import org.junit.Test;
+
 /**
  * Attempts to test the Connector with the framework.
  */
 public class DatabaseFilterTranslatorTests {
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testUnaryFilters() throws Exception {
@@ -63,12 +66,11 @@ public class DatabaseFilterTranslatorTests {
             assertEquals(expected.size(), b.getParams().size());
         }
     }
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testCompositeFilters() throws Exception {
@@ -96,12 +98,11 @@ public class DatabaseFilterTranslatorTests {
         // test xor
         // assertEquals(expected, actual);
     }
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testCompositeFilterChainNotOr() throws Exception {
@@ -120,12 +121,11 @@ public class DatabaseFilterTranslatorTests {
         assertEquals("count <= ? AND count >= ?", b.getWhereClause());
         assertEquals(expected.size(), b.getParams().size());
     }
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testCompositeFilterChainOrAnd() throws Exception {
@@ -146,12 +146,11 @@ public class DatabaseFilterTranslatorTests {
         assertEquals("( count > ? OR count < ? ) AND count = ?", b.getWhereClause());
         assertEquals(expected.size(), b.getParams().size());
     }
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testCompositeFilterChainAndOrAndOrAnd() throws Exception {
@@ -183,12 +182,11 @@ public class DatabaseFilterTranslatorTests {
                         .getWhereClause());
         assertEquals(expected, b.getParams());
     }
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testCompositeFilterChainOrAndNot() throws Exception {
@@ -210,12 +208,11 @@ public class DatabaseFilterTranslatorTests {
         assertEquals("( count > ? OR count < ? ) AND NOT count = ?", b.getWhereClause());
         assertEquals(expected.size(), b.getParams().size());
     }
+
     /**
-     *
      * Test method for {@link org.identityconnectors.dbcommon.DatabaseFilterTranslator}.
      *
      * @throws Exception
-     *
      */
     @Test
     public void testNotfilter() throws Exception {
@@ -230,8 +227,20 @@ public class DatabaseFilterTranslatorTests {
         expected.add(new SQLParam("count", 4, Types.INTEGER));
         assertEquals(expected.size(), b.getParams().size());
     }
-    DatabaseFilterTranslator getDatabaseFilterTranslator() {
+
+    @Test
+    public void equalsIgnoreCase() {
+        Filter f = FilterBuilder.equalsIgnoreCase(AttributeBuilder.build("name", "John"));
+        DatabaseFilterTranslator tr = getDatabaseFilterTranslator();
+        List<FilterWhereBuilder> blist = tr.translate(f);
+        assertEquals(1, blist.size());
+        final FilterWhereBuilder b = blist.get(0);
+        assertEquals("LOWER(name) = LOWER( ? )", b.getWhereClause());
+    }
+
+    private DatabaseFilterTranslator getDatabaseFilterTranslator() {
         return new DatabaseFilterTranslator(ObjectClass.ACCOUNT, null) {
+
             @Override
             protected SQLParam getSQLParam(Attribute attribute, ObjectClass oclass, OperationOptions options) {
                 return new SQLParam(attribute.getName(), AttributeUtil.getSingleValue(attribute), Types.NULL);

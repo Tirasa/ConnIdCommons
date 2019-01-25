@@ -100,13 +100,15 @@ public class FilterWhereBuilder {
      *
      * @param param value to builder
      * @param operator an operator to compare
+     * @param lowercase whether case-insensitive comparison should be performed
      */
-    public void addBind(final SQLParam param, final String operator) {
+    public void addBind(final SQLParam param, final String operator, final boolean lowercase) {
         if (param == null) {
             throw new IllegalArgumentException("null.param.not.suported");
         }
-        where.append(param.getQuotedName());
-        where.append(" ").append(operator).append(" ?");
+        where.append(lowercase ? "LOWER(" : "").append(param.getQuotedName()).append(lowercase ? ")" : "");
+        where.append(" ").append(operator).
+                append(lowercase ? " LOWER(" : "").append(" ?").append(lowercase ? " )" : "");
         params.add(param);
     }
 

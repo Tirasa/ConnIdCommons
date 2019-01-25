@@ -59,9 +59,9 @@ public class FilterWhereBuilderTest {
     public void testJoin() {
         FilterWhereBuilder l = new FilterWhereBuilder();
         final SQLParam param = new SQLParam(NAME, VALUE);
-        l.addBind(param, OPERATOR);
+        l.addBind(param, OPERATOR, false);
         FilterWhereBuilder r = new FilterWhereBuilder();
-        r.addBind(param, OPERATOR);
+        r.addBind(param, OPERATOR, false);
         FilterWhereBuilder actual = new FilterWhereBuilder();
         actual.join("AND", l, r);
         assertNotNull(actual);
@@ -80,7 +80,7 @@ public class FilterWhereBuilderTest {
         assertNotNull(actual);
         assertNotNull(actual.getParams());
         final SQLParam param = new SQLParam(NAME, VALUE);
-        actual.addBind(param, OPERATOR);
+        actual.addBind(param, OPERATOR, false);
         assertTrue(actual.getParams().contains(param));
     }
 
@@ -92,7 +92,7 @@ public class FilterWhereBuilderTest {
         FilterWhereBuilder actual = new FilterWhereBuilder();
         assertNotNull(actual);
         final SQLParam param = new SQLParam(NAME, VALUE);
-        actual.addBind(param, OPERATOR);
+        actual.addBind(param, OPERATOR, false);
         assertNotNull(actual.getWhere());
         assertEquals("name = ?", actual.getWhere().toString());
     }
@@ -117,7 +117,7 @@ public class FilterWhereBuilderTest {
         assertNotNull(actual);
         assertNotNull(actual.getParams());
         final SQLParam param = new SQLParam(NAME, VALUE);
-        actual.addBind(param, OPERATOR);
+        actual.addBind(param, OPERATOR, false);
         assertTrue(actual.getParams().contains(param));
         assertEquals("name = ?", actual.getWhereClause());
     }
@@ -130,7 +130,7 @@ public class FilterWhereBuilderTest {
         FilterWhereBuilder actual = new FilterWhereBuilder();
         assertNotNull(actual);
         final SQLParam param = new SQLParam(NAME, VALUE);
-        actual.addBind(param, OPERATOR);
+        actual.addBind(param, OPERATOR, false);
         assertEquals("name = ?", actual.getWhereClause());
         assertEquals("not one value for binding", 1, actual.getParams().size());
     }
@@ -143,7 +143,7 @@ public class FilterWhereBuilderTest {
         FilterWhereBuilder actual = new FilterWhereBuilder();
         assertNotNull(actual);
         final SQLParam param = new SQLParam(NAME, VALUE);
-        actual.addBind(param, OPERATOR);
+        actual.addBind(param, OPERATOR, false);
         assertEquals("name = ?", actual.getWhereClause());
         assertEquals("not one value for binding", 1, actual.getParams().size());
     }
