@@ -761,38 +761,33 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 cobld.setObjectClass(objClass);
 
                 // operation
-                // We assume that if DELETE, then we don't need to care about the rest
                 String op = (String) result.get("operation");
-                if (op != null && op.equalsIgnoreCase("DELETE")) {
-                    syncbld.setDeltaType(SyncDeltaType.DELETE);
+                // if operation is null we assume this is CREATE_OR_UPDATE
+                syncbld.setDeltaType(op != null && SyncDeltaType.DELETE.name().equalsIgnoreCase(op)
+                        ? SyncDeltaType.DELETE
+                        : SyncDeltaType.CREATE_OR_UPDATE);
+                // previous UID
+                String prevUid = (String) result.get("previousUid");
+                if (prevUid != null && !prevUid.isEmpty()) {
+                    syncbld.setPreviousUid(new Uid(prevUid));
+                }
 
-                } else {
-                    // we assume this is CREATE_OR_UPDATE
-                    syncbld.setDeltaType(SyncDeltaType.CREATE_OR_UPDATE);
+                // password? is password valid if empty string? let's assume yes...
+                if (result.get("password") != null) {
+                    cobld.addAttribute(AttributeBuilder.buildCurrentPassword(((String) result.get("password")).
+                            toCharArray()));
+                }
 
-                    // previous UID
-                    String prevUid = (String) result.get("previousUid");
-                    if (prevUid != null && !prevUid.isEmpty()) {
-                        syncbld.setPreviousUid(new Uid(prevUid));
-                    }
-
-                    // password? is password valid if empty string? let's assume yes...
-                    if (result.get("password") != null) {
-                        cobld.addAttribute(AttributeBuilder.buildCurrentPassword(((String) result.get("password")).
-                                toCharArray()));
-                    }
-
-                    // Remaining attributes
-                    for (Map.Entry<String, Object> attr : ((Map<String, Object>) result.get("attributes")).entrySet()) {
-                        final String attrName = attr.getKey();
-                        final Object attrValue = attr.getValue();
-                        if (attrValue instanceof Collection) {
-                            cobld.addAttribute(AttributeBuilder.build(attrName, (Collection<?>) attrValue));
-                        } else if (attrValue != null) {
-                            cobld.addAttribute(AttributeBuilder.build(attrName, attrValue));
-                        } else {
-                            cobld.addAttribute(AttributeBuilder.build(attrName));
-                        }
+                // Remaining attributes
+                for (Map.Entry<String, Object> attr : ((Map<String, Object>) result.get("attributes")).entrySet()) {
+                    final String attrName = attr.getKey();
+                    final Object attrValue = attr.getValue();
+                    if (attrValue instanceof Collection) {
+                        cobld.addAttribute(AttributeBuilder.build(attrName, (Collection<?>) attrValue));
+                    } else if (attrValue != null) {
+                        cobld.addAttribute(AttributeBuilder.build(attrName, attrValue));
+                    } else {
+                        cobld.addAttribute(AttributeBuilder.build(attrName));
                     }
                 }
                 syncbld.setObject(cobld.build());
