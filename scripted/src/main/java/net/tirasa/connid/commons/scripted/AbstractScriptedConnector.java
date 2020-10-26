@@ -234,9 +234,17 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("options", options.getOptions());
             // We give the id (name) as an argument, more friendly than dealing with __NAME__
-            arguments.put("id", AttributeUtil.getNameFromAttributes(createAttributes).getNameValue() == null
-                    ? AttributeUtil.getUidAttribute(createAttributes).getUidValue()
-                    : AttributeUtil.getNameFromAttributes(createAttributes).getNameValue());
+            String id = null;
+            Name name = AttributeUtil.getNameFromAttributes(createAttributes);
+            if (name == null) {
+                Uid uid = AttributeUtil.getUidAttribute(createAttributes);
+                if (uid != null) {
+                    id = uid.getUidValue();
+                }
+            } else {
+                id = name.getNameValue();
+            }
+            arguments.put("id", id);
 
             Map<String, List<Object>> attrMap = new HashMap<String, List<Object>>();
             for (Attribute attr : createAttributes) {
