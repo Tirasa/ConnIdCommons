@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -49,6 +50,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.sql.DataSource;
+import org.identityconnectors.common.security.GuardedString;
 import org.junit.Test;
 
 /**
@@ -504,7 +506,8 @@ public class SQLUtilTests {
     public void testGetConnectionFromDS() {
         Properties properties = new Properties();
         properties.put("java.naming.factory.initial", MockContextFactory.class.getName());
-        final Connection conn = SQLUtil.getDatasourceConnection("", properties);
-        assertNotNull("Connection returned from datasource is null", conn);
+        assertNotNull("Connection returned from datasource is null", SQLUtil.
+                getDatasourceConnection("", "user", new GuardedString("password".toCharArray()), properties));
+        assertNotNull("Connection returned from datasource is null", SQLUtil.getDatasourceConnection("", properties));
     }
 }

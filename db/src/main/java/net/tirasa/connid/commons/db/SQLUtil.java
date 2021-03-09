@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -89,7 +88,7 @@ public final class SQLUtil {
             }
             final javax.naming.InitialContext ic = getInitialContext(env);
             LOG.ok("Initial context: {0}", ic);
-            final DataSource ds = (DataSource) ic.lookup(datasourceName);
+            final DataSource ds = (DataSource) ic.lookup("java:/comp/env/" + datasourceName);
             return ds.getConnection();
         } catch (Exception e) {
             throw ConnectorException.wrap(e);
@@ -115,9 +114,8 @@ public final class SQLUtil {
                 LOG.ok(propertyName + ": {0}", env.getProperty(propertyName));
             }
             javax.naming.InitialContext ic = getInitialContext(env);
-            Context webContext = (Context) ic.lookup("java:/comp/env");
             LOG.ok("Initial context created");
-            final DataSource ds = (DataSource) webContext.lookup(datasourceName);
+            final DataSource ds = (DataSource) ic.lookup("java:/comp/env/" + datasourceName);
             LOG.ok("Datasource context created");
             final Connection[] ret = new Connection[1];
             password.access(new GuardedString.Accessor() {
