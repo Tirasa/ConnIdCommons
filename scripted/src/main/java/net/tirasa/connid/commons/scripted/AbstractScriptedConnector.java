@@ -26,6 +26,7 @@ import static net.tirasa.connid.commons.scripted.Constants.MSG_OBJECT_CLASS_REQU
 import static net.tirasa.connid.commons.scripted.Constants.MSG_INVALID_ATTRIBUTE_SET;
 import static net.tirasa.connid.commons.scripted.Constants.MSG_BLANK_UID;
 import static net.tirasa.connid.commons.scripted.Constants.MSG_BLANK_RESULT_HANDLER;
+import static net.tirasa.connid.commons.scripted.Constants.MSG_INVALID_SCRIPT;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.identityconnectors.common.IOUtil;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.script.ScriptExecutor;
 import org.identityconnectors.common.script.ScriptExecutorFactory;
@@ -173,35 +175,54 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
 
         // We need an executor for each and every script. At least, they'll get evaluated and compiled.
         // We privilege the script file over the script string if script filename is null, then we use the script string
-        createExecutor = getScriptExecutor(config.getCreateScript(), config.getCreateScriptFileName());
-        LOG.ok("Create script loaded");
+        if (checkReloadScript(createExecutor, config.getCreateScript(), config.getCreateScriptFileName())) {
+            createExecutor = getScriptExecutor(config.getCreateScript(), config.getCreateScriptFileName());
+            LOG.ok("Create script loaded");
+        }
 
-        updateExecutor = getScriptExecutor(config.getUpdateScript(), config.getUpdateScriptFileName());
-        LOG.ok("Update script loaded");
+        if (checkReloadScript(updateExecutor, config.getUpdateScript(), config.getUpdateScriptFileName())) {
+            updateExecutor = getScriptExecutor(config.getUpdateScript(), config.getUpdateScriptFileName());
+            LOG.ok("Update script loaded");
+        }
 
-        deleteExecutor = getScriptExecutor(config.getDeleteScript(), config.getDeleteScriptFileName());
-        LOG.ok("Delete script loaded");
+        if (checkReloadScript(deleteExecutor, config.getDeleteScript(), config.getDeleteScriptFileName())) {
+            deleteExecutor = getScriptExecutor(config.getDeleteScript(), config.getDeleteScriptFileName());
+            LOG.ok("Delete script loaded");
+        }
 
-        searchExecutor = getScriptExecutor(config.getSearchScript(), config.getSearchScriptFileName());
-        LOG.ok("Search script loaded");
+        if (checkReloadScript(searchExecutor, config.getSearchScript(), config.getSearchScriptFileName())) {
+            searchExecutor = getScriptExecutor(config.getSearchScript(), config.getSearchScriptFileName());
+            LOG.ok("Search script loaded");
+        }
 
-        authenticateExecutor = getScriptExecutor(
-                config.getAuthenticateScript(), config.getAuthenticateScriptFileName());
-        LOG.ok("Search script loaded");
+        if (checkReloadScript(authenticateExecutor, config.getAuthenticateScript(), config.
+                getAuthenticateScriptFileName())) {
+            authenticateExecutor = getScriptExecutor(
+                    config.getAuthenticateScript(), config.getAuthenticateScriptFileName());
+            LOG.ok("Authenticate script loaded");
+        }
 
-        resolveUsernameExecutor = getScriptExecutor(
-                config.getResolveUsernameScript(), config.getResolveUsernameScriptFileName());
-        LOG.ok("Search script loaded");
+        if (checkReloadScript(resolveUsernameExecutor, config.getResolveUsernameScript(), config.
+                getResolveUsernameScriptFileName())) {
+            resolveUsernameExecutor = getScriptExecutor(
+                    config.getResolveUsernameScript(), config.getResolveUsernameScriptFileName());
+            LOG.ok("ResolveUsername script loaded");
+        }
 
-        syncExecutor = getScriptExecutor(config.getSyncScript(), config.getSyncScriptFileName());
-        LOG.ok("Sync script loaded");
+        if (checkReloadScript(syncExecutor, config.getSyncScript(), config.getSyncScriptFileName())) {
+            syncExecutor = getScriptExecutor(config.getSyncScript(), config.getSyncScriptFileName());
+            LOG.ok("Sync script loaded");
+        }
 
-        schemaExecutor = getScriptExecutor(config.getSchemaScript(), config.getSchemaScriptFileName());
-        LOG.ok("Sync script loaded");
+        if (checkReloadScript(schemaExecutor, config.getSchemaScript(), config.getSchemaScriptFileName())) {
+            schemaExecutor = getScriptExecutor(config.getSchemaScript(), config.getSchemaScriptFileName());
+            LOG.ok("Schema script loaded");
+        }
 
-        testExecutor = getScriptExecutor(config.getTestScript(), config.getTestScriptFileName());
-        LOG.ok("Test script loaded");
-
+        if (checkReloadScript(testExecutor, config.getTestScript(), config.getTestScriptFileName())) {
+            testExecutor = getScriptExecutor(config.getTestScript(), config.getTestScriptFileName());
+            LOG.ok("Test script loaded");
+        }
         LOG.ok("Connector {0} successfully inited", getClass().getName());
     }
 
@@ -272,7 +293,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new ConnectorException("Create script error", e);
             }
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -337,7 +358,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             throw new ConnectorException("Update script didn't return with the __UID__ value");
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -406,7 +427,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new ConnectorException("Delete script error", e);
             }
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -449,7 +470,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             throw new ConnectorException("Authenticate script didn't return with the __UID__ value");
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -489,7 +510,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             throw new ConnectorException("ResolveUsername script didn't return with the __UID__ value");
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -553,7 +574,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new ConnectorException("Search script error", e);
             }
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -593,7 +614,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new ConnectorException("Sync script error", e);
             }
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -629,7 +650,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             return st;
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -661,7 +682,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             return result;
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(config.getMessage(MSG_INVALID_SCRIPT));
         }
     }
 
@@ -807,6 +828,12 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 // we have a null uid... mmmm....
             }
         }
+    }
+
+    private boolean checkReloadScript(final ScriptExecutor scriptExecutor, final String scriptString,
+            final String scriptFileName) {
+        return (StringUtil.isNotBlank(scriptFileName) || StringUtil.isNotBlank(scriptString))
+                && (scriptExecutor == null || config.isReloadScriptOnExecution());
     }
 
 }

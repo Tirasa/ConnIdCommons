@@ -36,6 +36,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -124,6 +125,14 @@ public final class SQLUtil {
                 public void access(char[] clearChars) {
                     try {
                         ret[0] = ds.getConnection(user, new String(clearChars));
+                    } catch (SQLFeatureNotSupportedException nse) {
+                        try {
+                            // some data Sources like HikariCP does not support anymore
+                            // getConnection(String username, String password)
+                            ret[0] = ds.getConnection();
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
                     } catch (SQLException e) {
                         // checked exception are not allowed in the access method 
                         // Lets use the exception softening pattern
