@@ -25,6 +25,8 @@ package net.tirasa.connid.commons.scripted;
 public final class Constants {
 
     public static final String MSG_OBJECT_CLASS_REQUIRED = "objectClass.required";
+    
+    public static final String MSG_INVALID_SCRIPT = "script.invalid";
 
     public static final String MSG_INVALID_ATTRIBUTE_SET = "invalid.attribute.set";
 
