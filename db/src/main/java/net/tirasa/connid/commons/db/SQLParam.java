@@ -58,7 +58,7 @@ public final class SQLParam {
      * @param name name of the attribute
      * @param value value
      * @param sqlType sql type
-     * @param quotedName
+     * @param quotedName quoted name
      */
     public SQLParam(String name, Object value, int sqlType, String quotedName) {
         if (name == null || name.length() == 0) {

@@ -62,7 +62,7 @@ public class PropertiesResolver {
     /**
      * Resolve properties containing already known values
      *
-     * @param properties
+     * @param properties properties
      * @return resolved properties
      */
     public static Properties resolveProperties(Properties properties) {

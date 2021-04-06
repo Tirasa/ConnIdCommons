@@ -94,7 +94,6 @@ public class FilterWhereBuilder {
 
     /**
      * Add name value pair bindings with operator, this is lazy bindings resolved at {@link #getWhereClause()}
-     * The names are quoted using the {@link #columnQuote} value
      *
      * @see FilterWhereBuilder#getWhereClause()
      *
@@ -113,8 +112,7 @@ public class FilterWhereBuilder {
     }
 
     /**
-     * Add null value
-     * The names are quoted using the {@link #columnQuote} value
+     * Add null value.
      *
      * @see FilterWhereBuilder#getWhereClause()
      *

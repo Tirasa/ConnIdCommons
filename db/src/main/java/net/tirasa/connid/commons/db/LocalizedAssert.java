@@ -42,7 +42,7 @@ public class LocalizedAssert {
     /**
      * Creates asserts with messages
      *
-     * @param cm
+     * @param cm connector messages
      * @throws IllegalArgumentException if cm param is null
      */
     public LocalizedAssert(ConnectorMessages cm) {
@@ -55,7 +55,7 @@ public class LocalizedAssert {
     /**
      * Creates asserts with messages with flag whether to localize argument names
      *
-     * @param cm
+     * @param cm connector messages
      * @param localizeArguments the arg
      * @throws IllegalArgumentException if cm param is null
      */
@@ -76,13 +76,12 @@ public class LocalizedAssert {
     }
 
     /**
-     * Asserts the argument is not null. If argument is null, throws localized
-     * IllegalArgumentException
+     * Asserts the argument is not null. If argument is null, throws localized IllegalArgumentException.
      *
-     * @param <T>
-     * @param o
-     * @param argument
-     * @return o param
+     * @param <T> type of the object to check
+     * @param o object to check
+     * @param argument exception message
+     * @return original obkect
      */
     public <T> T assertNotNull(T o, String argument) {
         if (o == null) {
@@ -92,13 +91,12 @@ public class LocalizedAssert {
     }
 
     /**
-     * Asserts the argument is null. If argument is not null, throws localized
-     * IllegalArgumentException
+     * Asserts the argument is null. If argument is not null, throws localized IllegalArgumentException.
      *
-     * @param <T>
-     * @param o
-     * @param argument
-     * @return o
+     * @param <T> type of the object to check
+     * @param o object to check
+     * @param argument exception message
+     * @return original obkect
      */
     public <T> T assertNull(T o, String argument) {
         if (o != null) {
@@ -111,9 +109,9 @@ public class LocalizedAssert {
      * Asserts that argument string is not blank. If argument is null or blank, throws localized
      * IllegalArgumentException
      *
-     * @param o
-     * @param argument
-     * @return same string
+     * @param o object to check
+     * @param argument exception message
+     * @return original obkect
      */
     public String assertNotBlank(String o, String argument) {
         if (o == null || o.length() == 0) {
@@ -126,9 +124,9 @@ public class LocalizedAssert {
      * Asserts that argument string is blank. If argument is not blank, throws localized
      * IllegalArgumentException
      *
-     * @param s
-     * @param argument
-     * @return same string
+     * @param s string to check
+     * @param argument exception message
+     * @return original obkect
      */
     public String assertBlank(String s, String argument) {
         if (s != null && s.length() > 0) {

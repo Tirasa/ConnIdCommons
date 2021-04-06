@@ -43,7 +43,6 @@ public class UpdateSetBuilder extends OperationBuilder {
 
     /**
      * Add column name and value pair.
-     * The names are quoted using the {@link #columnQuote} value
      *
      * @param param value
      * @return self
@@ -54,8 +53,7 @@ public class UpdateSetBuilder extends OperationBuilder {
     }
 
     /**
-     * Add column name and expression value pair
-     * The names are quoted using the {@link #columnQuote} value
+     * Add column name and expression value pair.
      *
      * @param param the value to bind
      * @param expression the expression
@@ -71,7 +69,7 @@ public class UpdateSetBuilder extends OperationBuilder {
     }
 
     /**
-     * Build the set SQL
+     * Build the set SQL.
      *
      * @return The update set clause
      */
@@ -80,9 +78,9 @@ public class UpdateSetBuilder extends OperationBuilder {
     }
 
     /**
-     * Add the update value
+     * Add the update value.
      *
-     * @param param
+     * @param param SQL parameter
      */
     public void addValue(SQLParam param) {
         params.add(param);

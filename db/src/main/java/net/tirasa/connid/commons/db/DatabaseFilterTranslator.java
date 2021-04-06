@@ -62,9 +62,6 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
         this.options = options;
     }
 
-    /**
-     * @return
-     */
     protected FilterWhereBuilder createBuilder() {
         return new FilterWhereBuilder();
     }
@@ -274,22 +271,20 @@ public abstract class DatabaseFilterTranslator extends AbstractFilterTranslator<
      * Get the SQLParam for given attribute
      *
      * @param attribute to translate
-     * @param oclass
-     * @param options
-     * @return the expected SQLParam, or null if filter not supported
-     * {@link java.sql.Types}
+     * @param oclass object class
+     * @param options operation options
+     * @return the expected SQLParam, or null if filter not supported {@link java.sql.Types}
      */
     protected abstract SQLParam getSQLParam(Attribute attribute, ObjectClass oclass, OperationOptions options);
 
     /**
      * Validate the attribute to supported search types
      *
-     * @param attribute
+     * @param attribute attribute
+     * @return wheter attribute is valid
      */
     protected boolean validateSearchAttribute(final Attribute attribute) {
-        //Ignore streamed ( byte[] objects ) from query
-        //Otherwise let the database process
-
+        //Ignore streamed ( byte[] objects ) from query, otherwise let the database process
         return !byte[].class.equals(AttributeUtil.getSingleValue(attribute).getClass());
     }
 }

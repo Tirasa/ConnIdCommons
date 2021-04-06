@@ -76,7 +76,7 @@ public final class SQLUtil {
     /**
      * Get the connection from the datasource.
      *
-     * @param datasourceName
+     * @param datasourceName datasource JNDI name
      * @param env properties
      * @return the connection get from default jndi context
      */
@@ -99,7 +99,7 @@ public final class SQLUtil {
     /**
      * Get the connection from the dataSource with specified user and password.
      *
-     * @param datasourceName
+     * @param datasourceName datasource JNDI name
      * @param user DB user
      * @param password DB password
      * @param env properties
@@ -149,13 +149,16 @@ public final class SQLUtil {
     /**
      * Get the connection from the dataSource with specified user and password.
      *
-     * @param datasourceName
+     * @param datasourceName datasource JNDI name
      * @param user DB user
      * @param password DB password
      * @return the connection get from dataSource
      */
     public static Connection getDatasourceConnection(
-            final String datasourceName, final String user, GuardedString password) {
+            final String datasourceName, 
+            final String user, 
+            GuardedString password) {
+
         return getDatasourceConnection(datasourceName, user, password, null);
     }
 
@@ -175,7 +178,7 @@ public final class SQLUtil {
     /**
      * Get the connection from the datasource.
      *
-     * @param datasourceName
+     * @param datasourceName datasource JNDI name
      * @return the connection get from default jndi context
      */
     public static Connection getDatasourceConnection(final String datasourceName) {
@@ -379,7 +382,7 @@ public final class SQLUtil {
         } catch (IllegalArgumentException e) {
             // Wrong string, cloud be a string number
             try {
-                parsedDate = new Date(new Long(param));
+                parsedDate = new Date(Long.valueOf(param));
             } catch (NumberFormatException expected) {
                 // Locale parsed date, possible lost of precision
                 try {
@@ -406,7 +409,7 @@ public final class SQLUtil {
         } catch (IllegalArgumentException e) {
             // Wrong string, cloud be a number
             try {
-                parsedTms = new Timestamp(new Long(param));
+                parsedTms = new Timestamp(Long.valueOf(param));
             } catch (NumberFormatException expected) {
                 // Locale parsed date, possible lost of precision
                 try {
@@ -435,7 +438,7 @@ public final class SQLUtil {
     /**
      * The null param vlaue normalizator.
      *
-     * @param sql
+     * @param sql SQL query
      * @param params list
      * @param out out param list
      * @return the modified string
@@ -471,7 +474,7 @@ public final class SQLUtil {
      *
      * @param blobValue blob
      * @return a converted value
-     * @throws SQLException
+     * @throws SQLException if anything goes wrong
      */
     public static byte[] blob2ByteArray(final Blob blobValue) throws SQLException {
         byte[] newValue = null;
@@ -495,7 +498,7 @@ public final class SQLUtil {
      * Binds the "?" markers in SQL statement with the parameters given as <i>values</i>. It concentrates the
      * replacement of all params.<code>GuardedString</code> are handled so the password is never visible.
      *
-     * @param statement
+     * @param statement SQL statement
      * @param params a <code>List</code> of the object arguments
      * @throws SQLException an exception in statement
      */
@@ -516,7 +519,7 @@ public final class SQLUtil {
      * Binds the "?" markers in SQL statement with the parameters given as <i>values</i>. It concentrates the
      * replacement of all params. <code>GuardedString</code> are handled so the password is never visible.
      *
-     * @param statement
+     * @param statement SQL statement
      * @param params a <code>List</code> of the object arguments
      * @throws SQLException an exception in statement
      */
@@ -547,7 +550,7 @@ public final class SQLUtil {
      *
      * @param resultSet database data
      * @return The transformed attribute set
-     * @throws SQLException
+     * @throws SQLException if anything goes wrong
      */
     public static Map<String, SQLParam> getColumnValues(final ResultSet resultSet) throws SQLException {
         Assertions.nullCheck(resultSet, "resultSet");
@@ -789,7 +792,7 @@ public final class SQLUtil {
      * @param value the value to be converted
      * @param sqlType the target sql type
      * @return the converted object value
-     * @throws SQLException
+     * @throws SQLException any SQL error
      */
     public static Object attribute2jdbcValue(final Object value, int sqlType) throws SQLException {
         if (value == null) {
@@ -875,7 +878,7 @@ public final class SQLUtil {
      * @param stmt to bind to
      * @param idx index of the object
      * @param guard a <CODE>GuardedString</CODE> parameter
-     * @throws SQLException
+     * @throws SQLException any SQL error
      */
     public static void setGuardedStringParam(final PreparedStatement stmt, final int idx, final GuardedString guard)
             throws SQLException {
@@ -911,7 +914,7 @@ public final class SQLUtil {
      * @param sql Select statement with or without parameters
      * @param params Parameters to use in statement
      * @return first row and first column value
-     * @throws SQLException
+     * @throws SQLException any SQL error
      */
     public static Object selectSingleValue(final Connection conn, final String sql, final SQLParam... params)
             throws SQLException {
@@ -940,9 +943,9 @@ public final class SQLUtil {
      *
      * @param conn JDBC connection
      * @param sql SQL select with or without params
-     * @param params
+     * @param params SQL parameters
      * @return list of selected rows
-     * @throws SQLException
+     * @throws SQLException any SQL error
      */
     public static List<Object[]> selectRows(final Connection conn, final String sql, final SQLParam... params)
             throws SQLException {
@@ -974,11 +977,11 @@ public final class SQLUtil {
      * Executes DML sql statement. This can be useful to execute insert/update/delete or some database specific
      * statement in one call
      *
-     * @param conn
-     * @param sql
-     * @param params
+     * @param conn connection
+     * @param sql SQL query
+     * @param params SQL parameters
      * @return number of rows affected as defined by {@link PreparedStatement#executeUpdate()}
-     * @throws SQLException
+     * @throws SQLException any SQL error
      */
     public static int executeUpdateStatement(final Connection conn, final String sql, final SQLParam... params)
             throws SQLException {
