@@ -808,17 +808,21 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 }
 
                 // Remaining attributes
-                for (Map.Entry<String, Object> attr : ((Map<String, Object>) result.get("attributes")).entrySet()) {
-                    final String attrName = attr.getKey();
-                    final Object attrValue = attr.getValue();
-                    if (attrValue instanceof Collection) {
-                        cobld.addAttribute(AttributeBuilder.build(attrName, (Collection<?>) attrValue));
-                    } else if (attrValue != null) {
-                        cobld.addAttribute(AttributeBuilder.build(attrName, attrValue));
-                    } else {
-                        cobld.addAttribute(AttributeBuilder.build(attrName));
+                Object attributes = result.get("attributes");
+                if (attributes != null) {
+                    for (Map.Entry<String, Object> attr : ((Map<String, Object>) attributes).entrySet()) {
+                        final String attrName = attr.getKey();
+                        final Object attrValue = attr.getValue();
+                        if (attrValue instanceof Collection) {
+                            cobld.addAttribute(AttributeBuilder.build(attrName, (Collection<?>) attrValue));
+                        } else if (attrValue != null) {
+                            cobld.addAttribute(AttributeBuilder.build(attrName, attrValue));
+                        } else {
+                            cobld.addAttribute(AttributeBuilder.build(attrName));
+                        }
                     }
                 }
+
                 syncbld.setObject(cobld.build());
                 if (!handler.handle(syncbld.build())) {
                     LOG.ok("Stop processing of the sync result set");
