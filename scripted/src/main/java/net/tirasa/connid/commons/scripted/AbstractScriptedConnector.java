@@ -89,7 +89,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
     private static final Pattern VARIABLE = Pattern.compile("\\$\\{[a-zA-Z]+\\w*\\}");
 
     public static final String resolveVariables(final String input) {
-        Set<String> vars = new HashSet<String>();
+        Set<String> vars = new HashSet<>();
         Matcher matcher = VARIABLE.matcher(input);
         while (matcher.find()) {
             int n = 0;
@@ -267,7 +267,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             arguments.put("id", id);
 
-            Map<String, List<Object>> attrMap = new HashMap<String, List<Object>>();
+            Map<String, List<Object>> attrMap = new HashMap<>();
             for (Attribute attr : createAttributes) {
                 attrMap.put(attr.getName(), attr.getValue());
             }
@@ -330,7 +330,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             arguments.put("uid", id);
             arguments.put("options", options.getOptions());
 
-            Map<String, List<Object>> attrMap = new HashMap<String, List<Object>>();
+            Map<String, List<Object>> attrMap = new HashMap<>();
             for (Attribute attr : attrs) {
                 if (OperationalAttributes.isOperationalAttribute(attr)) {
                     if (method.equalsIgnoreCase("UPDATE")) {
@@ -803,8 +803,8 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
 
                 // password? is password valid if empty string? let's assume yes...
                 if (result.get("password") != null) {
-                    cobld.addAttribute(AttributeBuilder.buildCurrentPassword(((String) result.get("password")).
-                            toCharArray()));
+                    cobld.addAttribute(
+                            AttributeBuilder.buildCurrentPassword(((String) result.get("password")).toCharArray()));
                 }
 
                 // Remaining attributes
