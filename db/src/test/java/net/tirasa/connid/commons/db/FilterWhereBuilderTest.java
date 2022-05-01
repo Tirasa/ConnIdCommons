@@ -23,11 +23,11 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * FilterWhereBuilder test class
@@ -67,7 +67,7 @@ public class FilterWhereBuilderTest {
         assertNotNull(actual);
         assertNotNull(actual.getParams());
         assertTrue(actual.getParams().contains(param));
-        assertEquals("number for binding", 2, actual.getParams().size());
+        assertEquals(2, actual.getParams().size());
         assertEquals("name = ? AND name = ?", actual.getWhereClause());
     }
 
@@ -132,7 +132,7 @@ public class FilterWhereBuilderTest {
         final SQLParam param = new SQLParam(NAME, VALUE);
         actual.addBind(param, OPERATOR, false);
         assertEquals("name = ?", actual.getWhereClause());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
+        assertEquals(1, actual.getParams().size());
     }
 
     /**
@@ -145,6 +145,6 @@ public class FilterWhereBuilderTest {
         final SQLParam param = new SQLParam(NAME, VALUE);
         actual.addBind(param, OPERATOR, false);
         assertEquals("name = ?", actual.getWhereClause());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
+        assertEquals(1, actual.getParams().size());
     }
 }

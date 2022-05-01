@@ -23,10 +23,10 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Types;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * The SQL util tests
@@ -64,8 +64,8 @@ public class SQLParamTests {
     public void paramTestHashEqual2() {
         SQLParam a = new SQLParam("A", "B");
         SQLParam b = new SQLParam("A", "B");
-        assertEquals("A", a.hashCode(), b.hashCode());
-        assertEquals("A", a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+        assertEquals(a, b);
     }
 
     /**
@@ -75,8 +75,8 @@ public class SQLParamTests {
     public void paramTestHashEqual3() {
         SQLParam a = new SQLParam("A", "B", Types.VARCHAR);
         SQLParam b = new SQLParam("A", "B", Types.VARCHAR);
-        assertEquals("A", a.hashCode(), b.hashCode());
-        assertEquals("A", a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+        assertEquals(a, b);
     }
 
     /**

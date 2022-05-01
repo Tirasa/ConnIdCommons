@@ -25,7 +25,7 @@ package net.tirasa.connid.commons.db;
 
 import static org.identityconnectors.framework.common.objects.AttributeBuilder.build;
 import static org.identityconnectors.framework.common.objects.filter.FilterBuilder.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import org.identityconnectors.framework.common.objects.ObjectClass;
 import org.identityconnectors.framework.common.objects.OperationOptions;
 import org.identityconnectors.framework.common.objects.filter.Filter;
 import org.identityconnectors.framework.common.objects.filter.FilterBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Attempts to test the Connector with the framework.
@@ -55,7 +55,7 @@ public class DatabaseFilterTranslatorTests {
         Filter filters[] = new Filter[] {
             equalTo(attr), greaterThan(attr), greaterThanOrEqualTo(attr), lessThan(attr), lessThanOrEqualTo(attr) };
         String ops[] = new String[] { "=", ">", ">=", "<", "<=" };
-        List<SQLParam> expected = new ArrayList<SQLParam>();
+        List<SQLParam> expected = new ArrayList<>();
         expected.add(new SQLParam("count", 2, Types.INTEGER));
         for (int i = 0; i < filters.length; i++) {
             DatabaseFilterTranslator tr = getDatabaseFilterTranslator();
@@ -108,7 +108,7 @@ public class DatabaseFilterTranslatorTests {
     public void testCompositeFilterChainNotOr() throws Exception {
         Filter lf = greaterThan(build("count", 4));
         Filter rf = lessThan(build("count", 20));
-        List<SQLParam> expected = new ArrayList<SQLParam>();
+        List<SQLParam> expected = new ArrayList<>();
         expected.add(new SQLParam("count", 4, Types.INTEGER));
         expected.add(new SQLParam("count", 20, Types.INTEGER));
         // test and
@@ -132,7 +132,7 @@ public class DatabaseFilterTranslatorTests {
         Filter f1 = greaterThan(build("count", 4));
         Filter f2 = lessThan(build("count", 20));
         Filter f3 = equalTo(build("count", 10));
-        List<SQLParam> expected = new ArrayList<SQLParam>();
+        List<SQLParam> expected = new ArrayList<>();
         expected.add(new SQLParam("count", 4, Types.INTEGER));
         expected.add(new SQLParam("count", 20, Types.INTEGER));
         expected.add(new SQLParam("count", 10, Types.INTEGER));
@@ -160,7 +160,7 @@ public class DatabaseFilterTranslatorTests {
         Filter f4 = equalTo(build("d", 1));
         Filter f5 = equalTo(build("e", 1));
         Filter f6 = equalTo(build("f", 1));
-        List<SQLParam> expected = new ArrayList<SQLParam>();
+        List<SQLParam> expected = new ArrayList<>();
         expected.add(new SQLParam("a", 1));
         expected.add(new SQLParam("b", 1));
         expected.add(new SQLParam("c", 1));
@@ -193,7 +193,7 @@ public class DatabaseFilterTranslatorTests {
         Filter f1 = greaterThan(build("count", 4));
         Filter f2 = lessThan(build("count", 20));
         Filter f3 = equalTo(build("count", 10));
-        List<SQLParam> expected = new ArrayList<SQLParam>();
+        List<SQLParam> expected = new ArrayList<>();
         expected.add(new SQLParam("count", 4, Types.INTEGER));
         expected.add(new SQLParam("count", 20, Types.INTEGER));
         expected.add(new SQLParam("count", 10, Types.INTEGER));
@@ -223,7 +223,7 @@ public class DatabaseFilterTranslatorTests {
         assertEquals(1, blist.size());
         final FilterWhereBuilder b = blist.get(0);
         assertEquals("count <= ?", b.getWhereClause());
-        List<SQLParam> expected = new ArrayList<SQLParam>();
+        List<SQLParam> expected = new ArrayList<>();
         expected.add(new SQLParam("count", 4, Types.INTEGER));
         assertEquals(expected.size(), b.getParams().size());
     }

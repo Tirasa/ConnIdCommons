@@ -23,12 +23,12 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author kitko
@@ -39,7 +39,7 @@ public class JNDIUtilTest {
     @Test
     public void testArrayToHashtableSuc() {
         String[] entries1 = { "a=A", "b=B" };
-        Map<String, String> res1 = new HashMap<String, String>();
+        Map<String, String> res1 = new HashMap<>();
         res1.put("a", "A");
         res1.put("b", "B");
         assertEquals(res1, JNDIUtil.arrayToProperties(entries1, null));

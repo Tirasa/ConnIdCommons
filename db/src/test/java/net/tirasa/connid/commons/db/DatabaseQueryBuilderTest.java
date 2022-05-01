@@ -23,15 +23,17 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import net.tirasa.connid.commons.db.DatabaseQueryBuilder.OrderBy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * DatabaseQueryBuilder test Class
@@ -54,41 +56,43 @@ public class DatabaseQueryBuilderTest {
     /**
      * Test method for {@link DatabaseQueryBuilder#DatabaseQueryBuilder(String, Set)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFilterQueryBuilderTableMissing() {
-        new DatabaseQueryBuilder("", null).getSQL();
+        assertThrows(IllegalArgumentException.class, () -> new DatabaseQueryBuilder("", null).getSQL());
     }
 
     /**
      * Test method for {@link DatabaseQueryBuilder#DatabaseQueryBuilder(String, Set)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFilterQueryBuilderColumnMissing() {
-        new DatabaseQueryBuilder("table", null).getSQL();
+        assertThrows(IllegalArgumentException.class, () -> new DatabaseQueryBuilder("table", null).getSQL());
     }
 
     /**
      * Test method for {@link DatabaseQueryBuilder#DatabaseQueryBuilder(String, Set)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFilterQueryBuilderColumnEmpty() {
-        new DatabaseQueryBuilder("table", new HashSet<String>()).getSQL();
+        assertThrows(IllegalArgumentException.class, () -> new DatabaseQueryBuilder("table", new HashSet<>()).getSQL());
     }
 
     /**
      * Test method for {@link DatabaseQueryBuilder#DatabaseQueryBuilder(String)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFilterQueryBuilderSelectMissing() {
-        new DatabaseQueryBuilder("").getSQL();
+        assertThrows(IllegalArgumentException.class, () -> new DatabaseQueryBuilder("").getSQL());
     }
 
     /**
      * Test method for {@link DatabaseQueryBuilder#DatabaseQueryBuilder(String)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFilterQueryBuilderWhereMissing() {
-        new DatabaseQueryBuilder(SELECT.substring(0, 7), null).getSQL();
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new DatabaseQueryBuilder(SELECT.substring(0, 7), null).getSQL());
     }
 
     /**
@@ -114,8 +118,8 @@ public class DatabaseQueryBuilderTest {
         actual.setWhere(where);
         assertNotNull(actual);
         assertEquals(SELECT + " WHERE name = ?", actual.getSQL());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
-        assertEquals("value for binding", param, actual.getParams().get(0));
+        assertEquals(1, actual.getParams().size());
+        assertEquals(param, actual.getParams().get(0));
     }
 
     /**
@@ -130,7 +134,7 @@ public class DatabaseQueryBuilderTest {
         actual.setWhere(where);
         assertNotNull(actual);
         assertEquals("SELECT * FROM Users WHERE ( test = 1) AND ( name = ? )", actual.getSQL());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
+        assertEquals(1, actual.getParams().size());
     }
 
     /**
@@ -150,7 +154,7 @@ public class DatabaseQueryBuilderTest {
      */
     @Test
     public void testGetSqlWithAttributesToGet() {
-        Set<String> attributesToGet = new LinkedHashSet<String>();
+        Set<String> attributesToGet = new LinkedHashSet<>();
         attributesToGet.add("test1");
         attributesToGet.add("test2");
         FilterWhereBuilder where = new FilterWhereBuilder();
@@ -159,8 +163,8 @@ public class DatabaseQueryBuilderTest {
         DatabaseQueryBuilder actual = new DatabaseQueryBuilder("table", attributesToGet);
         actual.setWhere(where);
         assertEquals("SELECT test1 , test2 FROM table WHERE name = ?", actual.getSQL());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
-        assertEquals("value for binding", param, actual.getParams().get(0));
+        assertEquals(1, actual.getParams().size());
+        assertEquals(param, actual.getParams().get(0));
     }
 
     /**
@@ -168,7 +172,7 @@ public class DatabaseQueryBuilderTest {
      */
     @Test
     public void testGetSqlWithAttributesToGetDifferentQuoting() {
-        Set<String> attributesToGet = new LinkedHashSet<String>();
+        Set<String> attributesToGet = new LinkedHashSet<>();
         attributesToGet.add("test1");
         attributesToGet.add("test2");
         FilterWhereBuilder where = new FilterWhereBuilder();
@@ -179,8 +183,8 @@ public class DatabaseQueryBuilderTest {
         actual.setTableName("table");
         assertNotNull(actual);
         assertEquals("SELECT test1 , test2 FROM table WHERE name = ?", actual.getSQL());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
-        assertEquals("value for binding", param, actual.getParams().get(0));
+        assertEquals(1, actual.getParams().size());
+        assertEquals(param, actual.getParams().get(0));
     }
 
     /**
@@ -188,8 +192,8 @@ public class DatabaseQueryBuilderTest {
      */
     @Test
     public void testGetSqlWithAttributesToGetAndOrderBy() {
-        Set<String> attributesToGet = new LinkedHashSet<String>();
-        ArrayList<OrderBy> orderBy = new ArrayList<OrderBy>();
+        Set<String> attributesToGet = new LinkedHashSet<>();
+        List<OrderBy> orderBy = new ArrayList<>();
         attributesToGet.add("test1");
         attributesToGet.add("test2");
         orderBy.add(new OrderBy("test1", true));
@@ -202,7 +206,7 @@ public class DatabaseQueryBuilderTest {
         actual.setOrderBy(orderBy);
         assertNotNull(actual);
         assertEquals("SELECT test1 , test2 FROM table WHERE name = ? ORDER BY test1 ASC, test2 DESC", actual.getSQL());
-        assertEquals("not one value for binding", 1, actual.getParams().size());
-        assertEquals("value for binding", param, actual.getParams().get(0));
+        assertEquals(1, actual.getParams().size());
+        assertEquals(param, actual.getParams().get(0));
     }
 }

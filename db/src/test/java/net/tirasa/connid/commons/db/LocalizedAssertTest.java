@@ -23,17 +23,18 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Properties;
 import org.identityconnectors.common.IOUtil;
 import org.identityconnectors.framework.common.objects.ConnectorMessages;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /** Tests for LocalizedAssert */
 public class LocalizedAssertTest {
@@ -48,7 +49,7 @@ public class LocalizedAssertTest {
                         .getClassLoader(), LocalizedAssertTest.class
                                 .getPackage().getName().replace('.', '/')
                         + "/Messages.properties");
-                assertNotNull("Cannot load Messages.properties", properties);
+                assertNotNull(properties);
             } catch (IOException e) {
                 fail("Cannot load Messages.properties" + e.getMessage());
             }
@@ -69,7 +70,7 @@ public class LocalizedAssertTest {
 
     static LocalizedAssert testee;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         testee = new LocalizedAssert(new TestConnectorMessages());
     }
@@ -81,7 +82,7 @@ public class LocalizedAssertTest {
     @Test
     public final void testAssertNotNull() {
         Integer i = testee.assertNotNull(1, "i");
-        assertEquals(new Integer(1), i);
+        assertEquals(1, i);
         try {
             testee.assertNotNull(null, "i");
             fail("Must fail for null argument");
@@ -99,7 +100,7 @@ public class LocalizedAssertTest {
         Integer i = testee.assertNull(null, "i");
         assertNull(i);
         try {
-            testee.assertNull(new Integer(1), "i");
+            testee.assertNull(1, "i");
             fail("Must fail for not null argument");
         } catch (RuntimeException e) {
             assertEquals("Argument [i] must be null", e.getMessage());

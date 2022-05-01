@@ -23,11 +23,11 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import java.sql.Types;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Test;
+import java.sql.Types;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests
@@ -65,8 +65,8 @@ public class InsertIntoBuilderTest {
         assertNotNull(actual.getValues());
         assertEquals("The update string", "?", actual.getValues());
         assertNotNull(actual.getParams());
-        assertEquals("The count", 1, actual.getParams().size());
-        assertEquals("The val", "val1", actual.getParams().get(0).getValue());
+        assertEquals(1, actual.getParams().size());
+        assertEquals("val1", actual.getParams().get(0).getValue());
     }
 
     /**
@@ -84,10 +84,10 @@ public class InsertIntoBuilderTest {
         assertNotNull(actual.getValues());
         assertEquals("The update string", "?, ?", actual.getValues());
         assertNotNull(actual.getParams());
-        assertEquals("The count", 2, actual.getParams().size());
-        assertEquals("The val", "val1", actual.getParams().get(0).getValue());
-        assertEquals("The val", "val2", actual.getParams().get(1).getValue());
-        assertEquals("The val", Types.NULL, actual.getParams().get(0).getSqlType());
-        assertEquals("The val", Types.VARCHAR, actual.getParams().get(1).getSqlType());
+        assertEquals(2, actual.getParams().size());
+        assertEquals("val1", actual.getParams().get(0).getValue());
+        assertEquals("val2", actual.getParams().get(1).getValue());
+        assertEquals(Types.NULL, actual.getParams().get(0).getSqlType());
+        assertEquals(Types.VARCHAR, actual.getParams().get(1).getSqlType());
     }
 }

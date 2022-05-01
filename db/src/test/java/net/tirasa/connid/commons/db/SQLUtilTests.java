@@ -23,10 +23,11 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -51,7 +52,7 @@ import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.sql.DataSource;
 import org.identityconnectors.common.security.GuardedString;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -66,19 +67,19 @@ public class SQLUtilTests {
      */
     @Test
     public void quietConnectionClose() throws Exception {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         tp.expectAndReturn("isClosed", Boolean.FALSE);
         tp.expectAndThrow("close", new SQLException("expected"));
         Connection c = tp.getProxy(Connection.class);
         DatabaseConnection dbc = new DatabaseConnection(c);
         SQLUtil.closeQuietly(dbc);
-        assertTrue("close not called", tp.isDone());
-        tp = new ExpectProxy<Connection>();
+        assertTrue(tp.isDone());
+        tp = new ExpectProxy<>();
         tp.expectAndReturn("isClosed", Boolean.TRUE);
         c = tp.getProxy(Connection.class);
         dbc = new DatabaseConnection(c);
         SQLUtil.closeQuietly(dbc);
-        assertTrue("isClosed not called", tp.isDone());
+        assertTrue(tp.isDone());
         //null tests
         dbc = null;
         SQLUtil.closeQuietly(dbc);
@@ -91,14 +92,14 @@ public class SQLUtilTests {
      */
     @Test
     public void quietConnectionRolback() throws Exception {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         tp.expectAndReturn("isClosed", Boolean.FALSE);
         tp.expectAndThrow("rollback", new SQLException("expected"));
         Connection s = tp.getProxy(Connection.class);
         DatabaseConnection dbc = new DatabaseConnection(s);
         SQLUtil.rollbackQuietly(dbc);
-        assertTrue("rollback not called", tp.isDone());
-        tp = new ExpectProxy<Connection>();
+        assertTrue(tp.isDone());
+        tp = new ExpectProxy<>();
         tp.expectAndReturn("isClosed", Boolean.TRUE);
         s = tp.getProxy(Connection.class);
         dbc = new DatabaseConnection(s);
@@ -142,14 +143,14 @@ public class SQLUtilTests {
         SQLUtil.closeQuietly((Statement) null);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testBuildConnectorObjectBuilderNull() throws SQLException {
-        SQLUtil.getColumnValues(null);
+        assertThrows(NullPointerException.class, () -> SQLUtil.getColumnValues(null));
     }
 
     @Test
     public void testConvertBlob() throws SQLException {
-        ExpectProxy<Blob> tb = new ExpectProxy<Blob>();
+        ExpectProxy<Blob> tb = new ExpectProxy<>();
         byte[] expected = new byte[] { 'a', 'h', 'o', 'j' };
         final ByteArrayInputStream is = new ByteArrayInputStream(expected);
         tb.expectAndReturn("getBinaryStream", is);
@@ -157,7 +158,7 @@ public class SQLUtilTests {
         final Object object = SQLUtil.jdbc2AttributeValue(blob);
         assertEquals(expected[0], ((byte[]) object)[0]);
         assertEquals(expected[3], ((byte[]) object)[3]);
-        assertTrue("getBinaryStream not called", tb.isDone());
+        assertTrue(tb.isDone());
     }
 
     @Test
@@ -225,38 +226,38 @@ public class SQLUtilTests {
     @Test
     public void testNormalizeNullValues() {
         final String sql = "insert into table values(?, ?, ?)";
-        final List<SQLParam> params = new ArrayList<SQLParam>();
+        final List<SQLParam> params = new ArrayList<>();
         params.add(new SQLParam("test", "test"));
         params.add(new SQLParam("null", null)); //Null unspecified should be normalized
         params.add(new SQLParam("null2", null, Types.VARCHAR)); //Null typed should remain
-        final List<SQLParam> out = new ArrayList<SQLParam>();
+        final List<SQLParam> out = new ArrayList<>();
         String actual = SQLUtil.normalizeNullValues(sql, params, out);
-        assertNotNull("sql", actual);
-        assertEquals("sql", "insert into table values(?, null, ?)", actual);
-        assertEquals("out value", 2, out.size());
+        assertNotNull(actual);
+        assertEquals("insert into table values(?, null, ?)", actual);
+        assertEquals(2, out.size());
     }
 
     @Test
     public void testNormalizeNullValuesSame() {
         final String sql = "insert into table values(?, ?, ?)";
-        final List<SQLParam> params = new ArrayList<SQLParam>();
+        final List<SQLParam> params = new ArrayList<>();
         params.add(new SQLParam("test1", "test"));
         params.add(new SQLParam("test2", 1));
         params.add(new SQLParam("test3", 5, Types.VARCHAR));
-        final List<SQLParam> out = new ArrayList<SQLParam>();
+        final List<SQLParam> out = new ArrayList<>();
         String actual = SQLUtil.normalizeNullValues(sql, params, out);
-        assertNotNull("sql", actual);
-        assertEquals("sql", "insert into table values(?, ?, ?)", actual);
-        assertEquals("out value", 3, out.size());
+        assertNotNull(actual);
+        assertEquals("insert into table values(?, ?, ?)", actual);
+        assertEquals(3, out.size());
     }
 
     @Test
     public void testNormalizeNullValuesLess() {
         final String sql = "insert into table values(?, ?, ?)";
-        final List<SQLParam> params = new ArrayList<SQLParam>();
+        final List<SQLParam> params = new ArrayList<>();
         params.add(new SQLParam("test1", "test"));
         params.add(new SQLParam("test2", 3));
-        final List<SQLParam> out = new ArrayList<SQLParam>();
+        final List<SQLParam> out = new ArrayList<>();
         try {
             SQLUtil.normalizeNullValues(sql, params, out);
             fail("IllegalStateException expected");
@@ -285,10 +286,10 @@ public class SQLUtilTests {
         final String TEST2 = "test2";
         final String TEST_VAL2 = "testValue2";
         //Resultset
-        final ExpectProxy<ResultSet> trs = new ExpectProxy<ResultSet>();
+        final ExpectProxy<ResultSet> trs = new ExpectProxy<>();
         ResultSet resultSetProxy = trs.getProxy(ResultSet.class);
         //Metadata
-        final ExpectProxy<ResultSetMetaData> trsmd = new ExpectProxy<ResultSetMetaData>();
+        final ExpectProxy<ResultSetMetaData> trsmd = new ExpectProxy<>();
         ResultSetMetaData metaDataProxy = trsmd.getProxy(ResultSetMetaData.class);
         trs.expectAndReturn("getMetaData", metaDataProxy);
         trsmd.expectAndReturn("getColumnCount", 2);
@@ -299,8 +300,8 @@ public class SQLUtilTests {
         trsmd.expectAndReturn("getColumnType", Types.VARCHAR);
         trs.expectAndReturn("getString", TEST_VAL2);
         final Map<String, SQLParam> actual = SQLUtil.getColumnValues(resultSetProxy);
-        assertTrue("getString not called", trs.isDone());
-        assertTrue("getColumnType not called", trsmd.isDone());
+        assertTrue(trs.isDone());
+        assertTrue(trsmd.isDone());
         assertEquals(2, actual.size());
         assertNotNull(actual.get(TEST1));
         assertNotNull(actual.get(TEST2));
@@ -320,46 +321,46 @@ public class SQLUtilTests {
         final Date TEST_DATE = new Date(System.currentTimeMillis());
         final Time TEST_TIME = new Time(System.currentTimeMillis());
         //Resultset
-        final ExpectProxy<ResultSet> trs = new ExpectProxy<ResultSet>();
+        final ExpectProxy<ResultSet> trs = new ExpectProxy<>();
         ResultSet resultSetProxy = trs.getProxy(ResultSet.class);
         trs.expectAndReturn("getObject", TEST_STR);
         SQLParam actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.NULL);
-        assertTrue("getObject not called", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_STR, actual.getValue());
         trs.expectAndReturn("getString", TEST_STR);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.VARCHAR);
-        assertTrue("getString not called", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_STR, actual.getValue());
         trs.expectAndReturn("getObject", TEST_STR);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.DOUBLE);
-        assertTrue("getObject not called", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_STR, actual.getValue());
         trs.expectAndReturn("getObject", TEST_STR);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.BLOB);
-        assertTrue("getObject not called", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_STR, actual.getValue());
         trs.expectAndReturn("getTimestamp", TEST_TMS);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.TIMESTAMP);
-        assertTrue("getTimestamp not callled", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_TMS, actual.getValue());
         trs.expectAndReturn("getDate", TEST_DATE);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.DATE);
-        assertTrue("getDate not called", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_DATE, actual.getValue());
         trs.expectAndReturn("getTime", TEST_TIME);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.TIME);
-        assertTrue("getTime not callled", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(TEST_TIME, actual.getValue());
         trs.expectAndReturn("getBoolean", Boolean.TRUE);
         actual = SQLUtil.getSQLParam(resultSetProxy, 0, TEST_STR, Types.BOOLEAN);
-        assertTrue("getBoolean not called", trs.isDone());
+        assertTrue(trs.isDone());
         assertNotNull(actual);
         assertEquals(Boolean.TRUE, actual.getValue());
     }
@@ -376,29 +377,29 @@ public class SQLUtilTests {
         final Date TEST_DATE = new Date(System.currentTimeMillis());
         final Time TEST_TIME = new Time(System.currentTimeMillis());
         //Resultset
-        final ExpectProxy<PreparedStatement> trs = new ExpectProxy<PreparedStatement>();
+        final ExpectProxy<PreparedStatement> trs = new ExpectProxy<>();
         PreparedStatement resultSetProxy = trs.getProxy(PreparedStatement.class);
         trs.expect("setNull");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, null, Types.CHAR));
-        assertTrue("setNull not called", trs.isDone());
+        assertTrue(trs.isDone());
         trs.expect("setObject");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, TEST_STR));
-        assertTrue("setObject not called", trs.isDone());
+        assertTrue(trs.isDone());
         trs.expect("setString");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, TEST_STR, Types.CHAR));
-        assertTrue("setString not called", trs.isDone());
+        assertTrue(trs.isDone());
         trs.expect("setBoolean");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, Boolean.TRUE, Types.BOOLEAN));
-        assertTrue("setBoolean not called", trs.isDone());
+        assertTrue(trs.isDone());
         trs.expect("setTimestamp");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, TEST_TMS, Types.TIMESTAMP));
-        assertTrue("setTimestamp not callled", trs.isDone());
+        assertTrue(trs.isDone());
         trs.expect("setTime");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, TEST_TIME, Types.TIME));
-        assertTrue("setTime not callled", trs.isDone());
+        assertTrue(trs.isDone());
         trs.expect("setDate");
         SQLUtil.setSQLParam(resultSetProxy, 0, new SQLParam(TEST_STR, TEST_DATE, Types.DATE));
-        assertTrue("setDate not callled", trs.isDone());
+        assertTrue(trs.isDone());
     }
 
     /**
@@ -491,9 +492,9 @@ public class SQLUtilTests {
 
         @Override
         public Context getInitialContext(final Hashtable<?, ?> environment) throws NamingException {
-            ExpectProxy<DataSource> dsProxy = new ExpectProxy<DataSource>();
+            ExpectProxy<DataSource> dsProxy = new ExpectProxy<>();
             dsProxy.expectAndReturn("getConnection", new ExpectProxy<Connection>().getProxy(Connection.class));
-            ExpectProxy<Context> ctxProxy = new ExpectProxy<Context>();
+            ExpectProxy<Context> ctxProxy = new ExpectProxy<>();
             ctxProxy.expectAndReturn("lookup", dsProxy.getProxy(DataSource.class));
             return ctxProxy.getProxy(Context.class);
         }
@@ -506,8 +507,8 @@ public class SQLUtilTests {
     public void testGetConnectionFromDS() {
         Properties properties = new Properties();
         properties.put("java.naming.factory.initial", MockContextFactory.class.getName());
-        assertNotNull("Connection returned from datasource is null", SQLUtil.
-                getDatasourceConnection("", "user", new GuardedString("password".toCharArray()), properties));
-        assertNotNull("Connection returned from datasource is null", SQLUtil.getDatasourceConnection("", properties));
+        assertNotNull(SQLUtil.getDatasourceConnection(
+                "", "user", new GuardedString("password".toCharArray()), properties));
+        assertNotNull(SQLUtil.getDatasourceConnection("", properties));
     }
 }

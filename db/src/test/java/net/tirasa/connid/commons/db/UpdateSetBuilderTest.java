@@ -23,10 +23,11 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.sql.Types;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests
@@ -61,9 +62,9 @@ public class UpdateSetBuilderTest {
         actual.addBind(new SQLParam("test1", "val1"), "password(?)");
         actual.addBind(new SQLParam("test2", "val2"), "max(?)");
         assertNotNull(actual.getSQL());
-        assertEquals("The update string", "test1 = password(?) , test2 = max(?)", actual.getSQL());
+        assertEquals("test1 = password(?) , test2 = max(?)", actual.getSQL());
         assertNotNull(actual.getParams());
-        assertEquals("The count", 2, actual.getParams().size());
+        assertEquals(2, actual.getParams().size());
     }
 
     /**
@@ -76,11 +77,11 @@ public class UpdateSetBuilderTest {
         // do the update
         actual.addBind(VALUE);
         assertNotNull(actual.getSQL());
-        assertEquals("The update string", "User = ?", actual.getSQL());
+        assertEquals("User = ?", actual.getSQL());
         assertNotNull(actual.getParams());
         assertNotNull(actual.getParams().get(0));
-        assertEquals("The values", VALUE, actual.getParams().get(0));
-        assertEquals("The values", Types.VARCHAR, actual.getParams().get(0).getSqlType());
+        assertEquals(VALUE, actual.getParams().get(0));
+        assertEquals(Types.VARCHAR, actual.getParams().get(0).getSqlType());
     }
 
     /**
@@ -93,9 +94,9 @@ public class UpdateSetBuilderTest {
         // do the update
         actual.addBind(VALUE);
         assertNotNull(actual.getParams());
-        assertEquals("The count", 1, actual.getParams().size());
+        assertEquals(1, actual.getParams().size());
         assertNotNull(actual.getParams().get(0));
-        assertEquals("The values", VALUE, actual.getParams().get(0));
-        assertEquals("The update string", MYSQL_USER_COLUMN + " = ?", actual.getSQL());
+        assertEquals(VALUE, actual.getParams().get(0));
+        assertEquals(MYSQL_USER_COLUMN + " = ?", actual.getSQL());
     }
 }

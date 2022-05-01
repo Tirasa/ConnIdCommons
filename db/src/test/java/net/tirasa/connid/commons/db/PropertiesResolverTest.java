@@ -23,12 +23,12 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link PropertiesResolver}
@@ -44,11 +44,11 @@ public class PropertiesResolverTest {
         p1.setProperty("key1", "value1");
         p1.setProperty("key2", "value2");
         p1.setProperty("key7", "${key1}");
-        Map<Object, Object> p1Copy = new HashMap<Object, Object>(p1);
+        Map<Object, Object> p1Copy = new HashMap<>(p1);
         Properties p2 = new Properties();
         p2.setProperty("key3", "${key1}");
         p2.setProperty("key4", "${key2}");
-        Map<Object, Object> p2Copy = new HashMap<Object, Object>(p2);
+        Map<Object, Object> p2Copy = new HashMap<>(p2);
         Properties p3 = PropertiesResolver.resolveProperties(p2, p1);
         assertEquals(p1Copy, p1);
         assertEquals(p2Copy, p2);

@@ -23,18 +23,18 @@
  */
 package net.tirasa.connid.commons.db;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -62,21 +62,21 @@ public class DatabaseConnectionTests {
      * @throws java.lang.Exception
      *
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         values = new ArrayList<SQLParam>();
         values.add(new SQLParam(LOGIN, LOGIN));
         values.add(new SQLParam(NAME, NAME));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         // not used yet 
     }
 
     @Test
     public void testDatabaseConnection() {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         DatabaseConnection dbc = new DatabaseConnection(tp.getProxy(Connection.class));
         assertNotNull(dbc);
         assertNotNull(dbc.getConnection());
@@ -89,19 +89,19 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testDispose() {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         tp.expectAndReturn("isClosed", Boolean.FALSE);
         tp.expect("close");
         Connection xc = tp.getProxy(Connection.class);
         DatabaseConnection dbc = new DatabaseConnection(xc);
         dbc.dispose();
-        assertTrue("close called", tp.isDone());
-        tp = new ExpectProxy<Connection>();
+        assertTrue(tp.isDone());
+        tp = new ExpectProxy<>();
         xc = tp.getProxy(Connection.class);
         tp.expectAndReturn("isClosed", Boolean.TRUE);
         dbc = new DatabaseConnection(xc);
         dbc.dispose();
-        assertTrue("close called", tp.isDone());
+        assertTrue(tp.isDone());
     }
 
     /**
@@ -111,7 +111,7 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testTest() {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         tp.expectAndReturn("getAutoCommit", Boolean.FALSE);
         tp.expect("setAutoCommit");
         tp.expectAndReturn("getAutoCommit", Boolean.TRUE);
@@ -119,7 +119,7 @@ public class DatabaseConnectionTests {
         tp.expect("commit");
         DatabaseConnection dbc = new DatabaseConnection(tp.getProxy(Connection.class));
         dbc.test();
-        assertTrue("test called", tp.isDone());
+        assertTrue(tp.isDone());
     }
 
     /**
@@ -129,14 +129,14 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testGetSetConnection() {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         final Connection xc = tp.getProxy(Connection.class);
         DatabaseConnection dbc = new DatabaseConnection(xc);
         dbc.getConnection();
-        assertTrue("close called", tp.isDone());
+        assertTrue(tp.isDone());
         assertNotNull(dbc.getConnection());
-        assertSame("connection", xc, dbc.getConnection());
-        assertTrue("test called", tp.isDone());
+        assertSame(xc, dbc.getConnection());
+        assertTrue(tp.isDone());
     }
 
     /**
@@ -147,14 +147,14 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testPrepareStatementNullValues() throws Exception {
-        final ExpectProxy<Connection> tpc = new ExpectProxy<Connection>();
-        final ExpectProxy<PreparedStatement> tps = new ExpectProxy<PreparedStatement>();
+        final ExpectProxy<Connection> tpc = new ExpectProxy<>();
+        final ExpectProxy<PreparedStatement> tps = new ExpectProxy<>();
         final PreparedStatement xps = tps.getProxy(PreparedStatement.class);
         tpc.expectAndReturn("prepareStatement", xps);
         DatabaseConnection dbc = new DatabaseConnection(tpc.getProxy(Connection.class));
         dbc.prepareStatement(TEST_SQL_STATEMENT, null);
-        assertTrue("statement created", tpc.isDone());
-        assertTrue("value binded", tps.isDone());
+        assertTrue(tpc.isDone());
+        assertTrue(tps.isDone());
     }
 
     /**
@@ -165,14 +165,14 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testPrepareStatementEmptyValues() throws Exception {
-        final ExpectProxy<Connection> tpc = new ExpectProxy<Connection>();
-        final ExpectProxy<PreparedStatement> tps = new ExpectProxy<PreparedStatement>();
+        final ExpectProxy<Connection> tpc = new ExpectProxy<>();
+        final ExpectProxy<PreparedStatement> tps = new ExpectProxy<>();
         final PreparedStatement xps = tps.getProxy(PreparedStatement.class);
         tpc.expectAndReturn("prepareStatement", xps);
         DatabaseConnection dbc = new DatabaseConnection(tpc.getProxy(Connection.class));
-        dbc.prepareStatement(TEST_SQL_STATEMENT, new ArrayList<SQLParam>());
-        assertTrue("statement created", tpc.isDone());
-        assertTrue("value binded", tps.isDone());
+        dbc.prepareStatement(TEST_SQL_STATEMENT, new ArrayList<>());
+        assertTrue(tpc.isDone());
+        assertTrue(tps.isDone());
     }
 
     /**
@@ -183,8 +183,8 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testPrepareStatement() throws Exception {
-        final ExpectProxy<Connection> tpc = new ExpectProxy<Connection>();
-        final ExpectProxy<PreparedStatement> tps = new ExpectProxy<PreparedStatement>();
+        final ExpectProxy<Connection> tpc = new ExpectProxy<>();
+        final ExpectProxy<PreparedStatement> tps = new ExpectProxy<>();
         final PreparedStatement xps = tps.getProxy(PreparedStatement.class);
         tpc.expectAndReturn("prepareStatement", xps);
         tps.expectAndReturn("setObject", LOGIN);
@@ -193,8 +193,8 @@ public class DatabaseConnectionTests {
         DatabaseConnection dbc = new DatabaseConnection(tpc.getProxy(Connection.class));
         final PreparedStatement ps = dbc.prepareStatement(SELECT_SQL_STATEMENT, values);
         ps.execute();
-        assertTrue("statement created", tpc.isDone());
-        assertTrue("value binded", tps.isDone());
+        assertTrue(tpc.isDone());
+        assertTrue(tps.isDone());
     }
 
     /**
@@ -205,8 +205,8 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testPrepareCall() throws Exception {
-        final ExpectProxy<Connection> tpc = new ExpectProxy<Connection>();
-        final ExpectProxy<CallableStatement> tps = new ExpectProxy<CallableStatement>();
+        final ExpectProxy<Connection> tpc = new ExpectProxy<>();
+        final ExpectProxy<CallableStatement> tps = new ExpectProxy<>();
         final CallableStatement cs = tps.getProxy(CallableStatement.class);
         tpc.expectAndReturn("prepareStatement", cs);
         tps.expectAndReturn("setObject", LOGIN);
@@ -215,8 +215,8 @@ public class DatabaseConnectionTests {
         DatabaseConnection dbc = new DatabaseConnection(tpc.getProxy(Connection.class));
         final PreparedStatement ps = dbc.prepareStatement(SELECT_SQL_STATEMENT, values);
         ps.execute();
-        assertTrue("statement created", tpc.isDone());
-        assertTrue("value binded", tps.isDone());
+        assertTrue(tpc.isDone());
+        assertTrue(tps.isDone());
     }
 
     /**
@@ -226,10 +226,10 @@ public class DatabaseConnectionTests {
      */
     @Test
     public void testCommit() {
-        ExpectProxy<Connection> tp = new ExpectProxy<Connection>();
+        ExpectProxy<Connection> tp = new ExpectProxy<>();
         tp.expect("commit");
         DatabaseConnection dbc = new DatabaseConnection(tp.getProxy(Connection.class));
         dbc.commit();
-        assertTrue("commit called", tp.isDone());
+        assertTrue(tp.isDone());
     }
 }
