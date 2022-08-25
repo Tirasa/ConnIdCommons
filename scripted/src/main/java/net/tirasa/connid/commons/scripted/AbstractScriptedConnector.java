@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.common.IOUtil;
 import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
@@ -50,6 +51,7 @@ import org.identityconnectors.framework.common.FrameworkUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.Attribute;
 import org.identityconnectors.framework.common.objects.AttributeBuilder;
+import org.identityconnectors.framework.common.objects.AttributeDelta;
 import org.identityconnectors.framework.common.objects.AttributeUtil;
 import org.identityconnectors.framework.common.objects.ConnectorObjectBuilder;
 import org.identityconnectors.framework.common.objects.Name;
@@ -78,11 +80,12 @@ import org.identityconnectors.framework.spi.operations.SearchOp;
 import org.identityconnectors.framework.spi.operations.SyncOp;
 import org.identityconnectors.framework.spi.operations.TestOp;
 import org.identityconnectors.framework.spi.operations.UpdateAttributeValuesOp;
+import org.identityconnectors.framework.spi.operations.UpdateDeltaOp;
 import org.identityconnectors.framework.spi.operations.UpdateOp;
 
 public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfiguration> implements Connector,
-        CreateOp, UpdateOp, UpdateAttributeValuesOp, DeleteOp, AuthenticateOp, ResolveUsernameApiOp, SchemaOp, SyncOp,
-        TestOp, SearchOp<Map<String, Object>>, ScriptOnConnectorOp {
+        CreateOp, UpdateOp, UpdateDeltaOp, UpdateAttributeValuesOp, DeleteOp, AuthenticateOp,
+        ResolveUsernameApiOp, SchemaOp, SyncOp, TestOp, SearchOp<Map<String, Object>>, ScriptOnConnectorOp {
 
     protected static final Log LOG = Log.getLog(AbstractScriptedConnector.class);
 
@@ -248,7 +251,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new IllegalArgumentException(config.getMessage(MSG_INVALID_ATTRIBUTE_SET));
             }
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("action", "CREATE");
             arguments.put("log", LOG);
@@ -297,10 +300,39 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
     }
 
+    private Map<String, Object> attributes2Arguments(final boolean plainUpdate, final Set<Attribute> attrs) {
+        if (CollectionUtil.isEmpty(attrs)) {
+            throw new IllegalArgumentException(config.getMessage(MSG_INVALID_ATTRIBUTE_SET));
+        }
+
+        Map<String, List<Object>> attrMap = new HashMap<>();
+        for (Attribute attr : attrs) {
+            if (OperationalAttributes.isOperationalAttribute(attr)) {
+                if (plainUpdate) {
+                    attrMap.put(attr.getName(), attr.getValue());
+                }
+            } else {
+                attrMap.put(attr.getName(), attr.getValue());
+            }
+        }
+
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("attributes", attrMap);
+
+        // Do we need to update the password?
+        if (config.getClearTextPasswordToScript() && plainUpdate) {
+            GuardedString gpasswd = AttributeUtil.getPasswordValue(attrs);
+            arguments.put("password", gpasswd == null ? null : SecurityUtil.decrypt(gpasswd));
+        }
+
+        return arguments;
+    }
+
     private Uid genericUpdate(
             final String method,
-            final ObjectClass objClass,
-            final Uid uid, Set<Attribute> attrs,
+            final ObjectClass objectClass,
+            final Uid uid,
+            final Map<String, Object> additionalArguments,
             final OperationOptions options) {
 
         if (config.isReloadScriptOnExecution()) {
@@ -308,45 +340,25 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             LOG.ok("Update ({0}) script loaded", method);
         }
         if (updateExecutor != null) {
-            if (objClass == null) {
+            if (objectClass == null) {
                 throw new IllegalArgumentException(config.getMessage(MSG_OBJECT_CLASS_REQUIRED));
             }
-            LOG.ok("Object class: {0}", objClass.getObjectClassValue());
+            LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
 
-            if (attrs == null || attrs.isEmpty()) {
-                throw new IllegalArgumentException(config.getMessage(MSG_INVALID_ATTRIBUTE_SET));
-            }
-
-            if (uid == null || (uid.getUidValue() == null)) {
+            if (uid == null || uid.getUidValue() == null) {
                 throw new IllegalArgumentException(config.getMessage(MSG_BLANK_UID));
             }
-            final String id = uid.getUidValue();
+            String id = uid.getUidValue();
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
+            arguments.putAll(additionalArguments);
 
             arguments.put("action", method);
             arguments.put("log", LOG);
-            arguments.put("objectClass", objClass.getObjectClassValue());
+            arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("uid", id);
             arguments.put("options", options.getOptions());
 
-            Map<String, List<Object>> attrMap = new HashMap<>();
-            for (Attribute attr : attrs) {
-                if (OperationalAttributes.isOperationalAttribute(attr)) {
-                    if (method.equalsIgnoreCase("UPDATE")) {
-                        attrMap.put(attr.getName(), attr.getValue());
-                    }
-                } else {
-                    attrMap.put(attr.getName(), attr.getValue());
-                }
-            }
-            arguments.put("attributes", attrMap);
-
-            // Do we need to update the password?
-            if (config.getClearTextPasswordToScript() && method.equalsIgnoreCase("UPDATE")) {
-                GuardedString gpasswd = AttributeUtil.getPasswordValue(attrs);
-                arguments.put("password", gpasswd == null ? null : SecurityUtil.decrypt(gpasswd));
-            }
             try {
                 Object uidAfter = updateExecutor.execute(arguments);
                 if (uidAfter instanceof String) {
@@ -369,7 +381,36 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             final Set<Attribute> replaceAttributes,
             final OperationOptions options) {
 
-        return genericUpdate("UPDATE", objectClass, uid, replaceAttributes, options);
+        return genericUpdate("UPDATE", objectClass, uid, attributes2Arguments(true, replaceAttributes), options);
+    }
+
+    @Override
+    public Set<AttributeDelta> updateDelta(
+            final ObjectClass objectClass,
+            final Uid uid,
+            final Set<AttributeDelta> modifications,
+            final OperationOptions options) {
+
+        if (CollectionUtil.isEmpty(modifications)) {
+            throw new IllegalArgumentException(config.getMessage(MSG_INVALID_ATTRIBUTE_SET));
+        }
+
+        Map<String, List<Object>> valuesToAdd = new HashMap<>();
+        Map<String, List<Object>> valuesToRemove = new HashMap<>();
+        Map<String, List<Object>> valuesToReplace = new HashMap<>();
+        for (AttributeDelta attr : modifications) {
+            valuesToAdd.put(attr.getName(), attr.getValuesToAdd());
+            valuesToRemove.put(attr.getName(), attr.getValuesToRemove());
+            valuesToReplace.put(attr.getName(), attr.getValuesToReplace());
+        }
+
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("valuesToAdd", valuesToAdd);
+        arguments.put("valuesToRemove", valuesToRemove);
+        arguments.put("valuesToReplace", valuesToReplace);
+
+        genericUpdate("UPDATE_DELTA", objectClass, uid, arguments, options);
+        return modifications;
     }
 
     @Override
@@ -379,7 +420,8 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             final Set<Attribute> valuesToAdd,
             final OperationOptions options) {
 
-        return genericUpdate("ADD_ATTRIBUTE_VALUES", objectClass, uid, valuesToAdd, options);
+        return genericUpdate("ADD_ATTRIBUTE_VALUES",
+                objectClass, uid, attributes2Arguments(false, valuesToAdd), options);
     }
 
     @Override
@@ -388,7 +430,8 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             final Uid uid, Set<Attribute> valuesToRemove,
             final OperationOptions options) {
 
-        return genericUpdate("REMOVE_ATTRIBUTE_VALUES", objectClass, uid, valuesToRemove, options);
+        return genericUpdate("REMOVE_ATTRIBUTE_VALUES",
+                objectClass, uid, attributes2Arguments(false, valuesToRemove), options);
     }
 
     @Override
@@ -407,12 +450,12 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
 
-            if (uid == null || (uid.getUidValue() == null)) {
+            if (uid == null || uid.getUidValue() == null) {
                 throw new IllegalArgumentException(config.getMessage(MSG_BLANK_UID));
             }
-            final String id = uid.getUidValue();
+            String id = uid.getUidValue();
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("action", "DELETE");
             arguments.put("log", LOG);
@@ -449,7 +492,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("action", "AUTHENTICATE");
             arguments.put("log", LOG);
@@ -491,7 +534,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             LOG.ok("Object class: {0}", objectClass.getObjectClassValue());
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("action", "RESOLVE USERNAME");
             arguments.put("log", LOG);
@@ -521,7 +564,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             schemaExecutor = getScriptExecutor("", config.getSchemaScriptFileName());
         }
         if (schemaExecutor != null) {
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("action", "SCHEMA");
             arguments.put("log", LOG);
@@ -558,13 +601,14 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new IllegalArgumentException(config.getMessage(MSG_BLANK_RESULT_HANDLER));
             }
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("action", "SEARCH");
             arguments.put("log", LOG);
             arguments.put("options", options.getOptions());
             arguments.put("query", query);
+
             try {
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> results = (List<Map<String, Object>>) searchExecutor.execute(arguments);
@@ -598,13 +642,14 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 throw new IllegalArgumentException(config.getMessage(MSG_BLANK_RESULT_HANDLER));
             }
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("action", "SYNC");
             arguments.put("log", LOG);
             arguments.put("options", options.getOptions());
-            arguments.put("token", token != null ? token.getValue() : null);
+            arguments.put("token", token == null ? null : token.getValue());
+
             try {
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> results = (List<Map<String, Object>>) syncExecutor.execute(arguments);
@@ -631,11 +676,12 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             }
             LOG.ok("ObjectClass: {0}", objectClass.getObjectClassValue());
 
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("objectClass", objectClass.getObjectClassValue());
             arguments.put("action", "GET_LATEST_SYNC_TOKEN");
             arguments.put("log", LOG);
+
             try {
                 // We expect the script to return a value (or null) that makes the sync token
                 // !! result has to be one of the framework known types...
@@ -667,12 +713,13 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             throw new ConnectorException("RunOnConnector script parse error", e);
         }
         if (runOnConnectorExecutor != null) {
-            final Map<String, Object> arguments = buildArguments();
+            Map<String, Object> arguments = buildArguments();
 
             arguments.put("action", "RUNSCRIPTONCONNECTOR");
             arguments.put("log", LOG);
             arguments.put("options", options.getOptions());
             arguments.put("scriptsArguments", request.getScriptArguments());
+
             try {
                 // We return any object from the script
                 result = runOnConnectorExecutor.execute(arguments);
@@ -695,10 +742,10 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
             LOG.ok("Test script loaded");
         }
         if (testExecutor != null) {
-            final Map<String, Object> arguments = buildArguments();
-
+            Map<String, Object> arguments = buildArguments();
             arguments.put("action", "TEST");
             arguments.put("log", LOG);
+
             try {
                 testExecutor.execute(arguments);
                 LOG.ok("Test ok");
@@ -708,8 +755,11 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
     }
 
-    private void processResults(ObjectClass objClass, List<Map<String, Object>> results, ResultsHandler handler) {
-        // Let's iterate over the results:
+    private void processResults(
+            final ObjectClass objectClass,
+            final List<Map<String, Object>> results,
+            final ResultsHandler handler) {
+
         String pagedResultCookie = null;
         for (Map<String, Object> result : results) {
             // special handling of paged result cookie
@@ -746,7 +796,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                         cobld.addAttribute(AttributeBuilder.build(attrName));
                     }
                 }
-                cobld.setObjectClass(objClass);
+                cobld.setObjectClass(objectClass);
                 handler.handle(cobld.build());
                 LOG.ok("ConnectorObject is built");
             }
@@ -761,8 +811,11 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
     }
 
     @SuppressWarnings("unchecked")
-    private void processDeltas(ObjectClass objClass, List<Map<String, Object>> results, SyncResultsHandler handler) {
-        // Let's iterate over the results:
+    private void processDeltas(
+            final ObjectClass objectClass,
+            final List<Map<String, Object>> results,
+            final SyncResultsHandler handler) {
+
         for (Map<String, Object> result : results) {
             // The Map should look like:
             // token: <Object> token
@@ -787,7 +840,7 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
                 ConnectorObjectBuilder cobld = new ConnectorObjectBuilder();
                 cobld.setName(uid);
                 cobld.setUid(uid);
-                cobld.setObjectClass(objClass);
+                cobld.setObjectClass(objectClass);
 
                 // operation
                 String op = (String) result.get("operation");
@@ -834,10 +887,12 @@ public abstract class AbstractScriptedConnector<C extends AbstractScriptedConfig
         }
     }
 
-    private boolean checkReloadScript(final ScriptExecutor scriptExecutor, final String scriptString,
+    private boolean checkReloadScript(
+            final ScriptExecutor scriptExecutor,
+            final String scriptString,
             final String scriptFileName) {
+
         return (StringUtil.isNotBlank(scriptFileName) || StringUtil.isNotBlank(scriptString))
                 && (scriptExecutor == null || config.isReloadScriptOnExecution());
     }
-
 }
