@@ -30,12 +30,12 @@
   <parent>
     <groupId>net.tirasa.connid</groupId>
     <artifactId>connid</artifactId>
-    <version>1.5.2.0</version>
+    <version>1.6.0.0-SNAPSHOT</version>
   </parent>
-    
+
   <groupId>net.tirasa.connid</groupId>
   <artifactId>connid-commons</artifactId>
-  <version>1.5.2.0-SNAPSHOT</version>
+  <version>1.6.0.0-SNAPSHOT</version>
 
   <name>ConnId Commons</name>
 
@@ -83,9 +83,10 @@
   </mailingLists>
 
   <properties>
-    <connid.version>1.5.2.0</connid.version>
-        
-    <rootpom.basedir>${basedir}</rootpom.basedir>        
+    <connid.version>1.6.0.0-SNAPSHOT</connid.version>
+
+    <targetJdk>11</targetJdk>
+    <rootpom.basedir>${basedir}</rootpom.basedir>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -105,6 +106,23 @@
   </dependencyManagement>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+          <configuration>
+            <release>${targetJdk}</release>
+            <useIncrementalCompilation>false</useIncrementalCompilation>
+            <showWarnings>true</showWarnings>
+            <showDeprecation>true</showDeprecation>
+            <compilerArgument>-Xlint:unchecked</compilerArgument>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>com.mycila</groupId>
