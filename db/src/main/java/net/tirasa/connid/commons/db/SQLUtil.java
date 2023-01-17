@@ -125,9 +125,9 @@ public final class SQLUtil {
                 public void access(char[] clearChars) {
                     try {
                         ret[0] = ds.getConnection(user, new String(clearChars));
-                    } catch (SQLFeatureNotSupportedException nse) {
+                    } catch (UnsupportedOperationException | SQLFeatureNotSupportedException nse) {
                         try {
-                            // some data Sources like HikariCP does not support anymore
+                            // some data Sources like HikariCP or Tomcat's BasicDataSource do not support anymore
                             // getConnection(String username, String password)
                             ret[0] = ds.getConnection();
                         } catch (SQLException e) {
@@ -155,8 +155,8 @@ public final class SQLUtil {
      * @return the connection get from dataSource
      */
     public static Connection getDatasourceConnection(
-            final String datasourceName, 
-            final String user, 
+            final String datasourceName,
+            final String user,
             GuardedString password) {
 
         return getDatasourceConnection(datasourceName, user, password, null);
