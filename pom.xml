@@ -232,7 +232,6 @@
   </repositories>
 
   <modules>
-    <module>db</module>
     <module>scripted</module>
   </modules>
 </project>
