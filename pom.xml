@@ -177,7 +177,7 @@
         </executions>
       </plugin>
       
-      <!-- Put NOTICE and LICENSE files in all artifacts and javadocs -->
+      <!-- Put LICENSE file in all artifacts and javadocs -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
@@ -189,7 +189,7 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/classes/META-INF</outputDirectory>
+              <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
               <resources>
                 <resource>
                   <directory>${rootpom.basedir}</directory>
@@ -207,7 +207,7 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
+              <outputDirectory>${project.build.directory}/reports/apidocs/META-INF</outputDirectory>
               <resources>
                 <resource>
                   <directory>${rootpom.basedir}</directory>
