@@ -83,7 +83,7 @@
   </mailingLists>
 
   <properties>
-    <connid.version>1.6.0.0-RC2</connid.version>
+    <connid.version>1.6.0.0-RC3</connid.version>
 
     <targetJdk>11</targetJdk>
     <rootpom.basedir>${basedir}</rootpom.basedir>
